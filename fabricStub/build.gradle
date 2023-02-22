@@ -1,0 +1,40 @@
+import com.sun.org.apache.bcel.internal.classfile.ModuleMainClass
+
+plugins {
+    id 'application'
+}
+
+version 'unspecified'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public'}
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    maven { url 'https://maven.aliyun.com/repository/central' }
+    maven { url 'https://maven.aliyun.com/repository/google' }
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+
+    // This dependency is used by the application.
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.hyperledger.fabric:fabric-gateway:1.1.0'
+    implementation 'com.google.code.gson:gson:2.9.1'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
+
+
+
+
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+mainClassName = "com.crosschain.fabric.App"
+apply plugin: 'java'
+apply plugin: 'application'
