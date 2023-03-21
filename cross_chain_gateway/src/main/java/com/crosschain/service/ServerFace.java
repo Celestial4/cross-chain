@@ -1,8 +1,9 @@
 package com.crosschain.service;
 
 import com.crosschain.channel.ChannelManager;
-import com.crosschain.common.CCRequest;
-import com.crosschain.dispatch.CrossChainDispatcher;
+import com.crosschain.common.CommonCrossChainRequest;
+import com.crosschain.common.CrossChainRequest;
+import com.crosschain.dispatch.DispatcherBase;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -16,23 +17,34 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServerFace {
 
     @Resource
-    private CrossChainDispatcher dispatcher;
+    private DispatcherBase dispatcher;
 
     @Resource
     private ChannelManager channelManager;
 
     @PostMapping("/crosschain")
-    public String resolve(@Validated @RequestParam("contract") String contractName,
-                          @Validated @RequestParam("method") String method,
+    public String resolve(@RequestParam("channel") String channel,
+                          @RequestParam("des_chain") String desChain,
+                          @RequestParam("des_contract") String desContract,
+                          @RequestParam("des_function") String desFunc,
                           @RequestParam(value = "args",defaultValue = "") String args,
-                          @RequestParam("des_channel") String channel,
-                          @RequestParam("des_chain") String chain) {
-        CCRequest req = new CCRequest();
-        req.setDesChannel(channel);
-        req.setDesChain(chain);
-        req.setContract(contractName);
-        req.setContcFunc(method);
-        req.setArgs(args);
+                          @RequestParam("src_chain") String srcChain,
+                          @RequestParam("src_contract") String srcContract,
+                          @RequestParam("src_function") String srcFunc,
+                          @RequestParam("user_name") String username,
+                          @RequestParam("user_token") String token) {
+        CommonCrossChainRequest src = new CommonCrossChainRequest();
+        src.setChainName(srcChain);
+        src.setContract(srcContract);
+        src.setFunction(srcFunc);
+
+        CommonCrossChainRequest des = new CommonCrossChainRequest();
+        des.setChainName(desChain);
+        des.setContract(desContract);
+        des.setFunction(desFunc);
+        des.setArgs(args);
+
+        CrossChainRequest req = new CrossChainRequest(src,des,channel);
 
         return dispatcher.process(req);
     }
