@@ -1,4 +1,6 @@
-package com.crosschain.common;
+package com.crosschain.service;
+
+import com.crosschain.common.CommonCrossChainRequest;
 
 public class CrossChainRequest{
     private CommonCrossChainRequest srcChain;

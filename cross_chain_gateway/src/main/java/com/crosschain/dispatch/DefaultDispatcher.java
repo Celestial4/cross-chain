@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Slf4j
-public class CrossChainDispatcher extends DispatcherBase {
+public class DefaultDispatcher extends DispatcherBase {
 
     @Override
     CommonCrossChainResponse processDes(CommonCrossChainRequest req, Channel channel) throws
@@ -42,5 +42,10 @@ public class CrossChainDispatcher extends DispatcherBase {
         String res = new String(data, StandardCharsets.UTF_8);
 
         log.info(Loggers.LOGFORMAT, "received from blockchain:" + res);
+    }
+
+    @Override
+    String processResult(CommonCrossChainResponse rep) {
+        return null;
     }
 }

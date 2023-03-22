@@ -2,8 +2,8 @@ package com.crosschain.service;
 
 import com.crosschain.channel.ChannelManager;
 import com.crosschain.common.CommonCrossChainRequest;
-import com.crosschain.common.CrossChainRequest;
 import com.crosschain.dispatch.DispatcherBase;
+import com.crosschain.dispatch.DispatcherManager;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServerFace {
 
     @Resource
-    private DispatcherBase dispatcher;
+    private DispatcherManager dispatcherManager;
 
     @Resource
     private ChannelManager channelManager;
@@ -31,6 +31,7 @@ public class ServerFace {
                           @RequestParam("src_chain") String srcChain,
                           @RequestParam("src_contract") String srcContract,
                           @RequestParam("src_function") String srcFunc,
+                          @RequestParam(value = "mode",defaultValue = "default") String mode,
                           @RequestParam("user_name") String username,
                           @RequestParam("user_token") String token) {
         CommonCrossChainRequest src = new CommonCrossChainRequest();
@@ -44,7 +45,13 @@ public class ServerFace {
         des.setFunction(desFunc);
         des.setArgs(args);
 
+        DispatcherBase dispatcher;
         CrossChainRequest req = new CrossChainRequest(src,des,channel);
+        try {
+            dispatcher = dispatcherManager.getDispatcher(mode);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
 
         return dispatcher.process(req);
     }

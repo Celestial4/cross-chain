@@ -12,11 +12,14 @@ public class CrossChainDispatcherConfig {
     private ChannelManager channelManager;
 
     @Bean
-    public DispatcherBase newCrossChainDispatcher(){
-        DispatcherBase dispatcher = new CrossChainDispatcher();
+    public DispatcherBase defaultDispatcher(){
+        DispatcherBase dispatcher = new DefaultDispatcher();
         dispatcher.setChannelManager(channelManager);
 
         dispatcher.init();
         return dispatcher;
     }
+
+    //todo 添加其他通信协议的dispatcher
+
 }

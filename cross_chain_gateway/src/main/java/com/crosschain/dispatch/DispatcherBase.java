@@ -2,6 +2,7 @@ package com.crosschain.dispatch;
 
 import com.crosschain.channel.ChannelManager;
 import com.crosschain.common.*;
+import com.crosschain.service.CrossChainRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.InputStream;
@@ -25,6 +26,8 @@ public abstract class DispatcherBase {
 
     abstract void processSrc(CommonCrossChainRequest req, Channel channel) throws Exception;
 
+    abstract String processResult(CommonCrossChainResponse rep);
+
     public void init() {
         try {
             Properties pros = new Properties();
@@ -47,8 +50,10 @@ public abstract class DispatcherBase {
 
             if (channel.getStatus() == 0) {
                 CommonCrossChainResponse DesRes = processDes(request.getDesChainRequest(), channel);
+
                 CommonCrossChainRequest srcChainRequest = request.getSrcChainRequest();
-                srcChainRequest.setArgs(DesRes.getResult());
+                srcChainRequest.setArgs(processResult(DesRes));
+
                 processSrc(srcChainRequest, channel);
                 return "crosschain success!";
             } else {
