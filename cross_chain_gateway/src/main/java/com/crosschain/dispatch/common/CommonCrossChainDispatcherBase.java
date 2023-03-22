@@ -1,18 +1,22 @@
-package com.crosschain.dispatch;
+package com.crosschain.dispatch.common;
 
 import com.crosschain.channel.ChannelManager;
-import com.crosschain.common.*;
+import com.crosschain.common.Channel;
+import com.crosschain.common.CommonCrossChainRequest;
+import com.crosschain.common.CommonCrossChainResponse;
+import com.crosschain.common.Loggers;
+import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.service.CrossChainRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 @Slf4j
-public abstract class DispatcherBase {
+public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
 
     public void setChannelManager(ChannelManager channelManager) {
         this.channelManager = channelManager;
@@ -44,6 +48,7 @@ public abstract class DispatcherBase {
         }
     }
 
+    @Override
     public String process(CrossChainRequest request) {
         try {
             Channel channel = channelManager.getChannel(request.getChannel());
@@ -64,24 +69,5 @@ public abstract class DispatcherBase {
             return "crosschain failed!";
         }
         return "crosschain failed!";
-    }
-
-
-    protected byte[] innerCall(String[] socketInfo,String[] req) throws Exception {
-        Socket socket = new Socket(socketInfo[0], Integer.parseInt(socketInfo[1]));
-        //发送跨链请求
-        OutputStream os = socket.getOutputStream();
-        String result = String.format("%s\r\n%s\r\n%s", req[0], req[1], req[2]);
-
-        os.write(result.getBytes(StandardCharsets.UTF_8));
-        InputStream is = socket.getInputStream();
-
-        //读取跨链回执
-        byte[] buff = new byte[8192];
-        int cnt = is.read(buff);
-
-        byte[] data = new byte[cnt];
-        System.arraycopy(buff, 0, data, 0, cnt);
-        return data;
     }
 }

@@ -1,13 +1,14 @@
-package com.crosschain.dispatch;
+package com.crosschain.dispatch.common;
 
 import com.crosschain.common.*;
+import com.crosschain.dispatch.CrossChainClient;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Slf4j
-public class DefaultDispatcher extends DispatcherBase {
+public class DefaultCommonCrossChainDispatcher extends CommonCrossChainDispatcherBase{
 
     @Override
     CommonCrossChainResponse processDes(CommonCrossChainRequest req, Channel channel) throws
@@ -20,7 +21,7 @@ public class DefaultDispatcher extends DispatcherBase {
         String socAddress = maps.get(req.getChainName());
         String[] socketInfo = socAddress.split(":");
 
-        byte[] data = innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
+        byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
         log.info(Loggers.LOGFORMAT, "received from blockchain:" + res);
 
@@ -38,12 +39,13 @@ public class DefaultDispatcher extends DispatcherBase {
 
         String[] socketInfo = socAddress.split(":");
 
-        byte[] data = innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
+        byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
 
         log.info(Loggers.LOGFORMAT, "received from blockchain:" + res);
     }
 
+    //todo 对目标链的返回结果处理
     @Override
     String processResult(CommonCrossChainResponse rep) {
         return null;

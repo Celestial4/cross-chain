@@ -4,26 +4,23 @@ import com.crosschain.common.Chain;
 import com.crosschain.common.Channel;
 import com.crosschain.common.Loggers;
 import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Component
 @Slf4j
 public class ChannelManager {
 
     private final Map<String, Channel> channels = new HashMap<>();
 
-    @Resource
+    public void setDs(ChannelSource ds) {
+        this.ds = ds;
+    }
+
     private ChannelSource ds;
 
-
-    @PostConstruct
-    private void init() {
+    public void init() {
         List<Channel> channels = ds.getAllChannel();
         for (Channel c : channels) {
             this.channels.put(c.getChannelName(), c);

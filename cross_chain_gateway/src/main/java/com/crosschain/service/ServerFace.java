@@ -1,8 +1,9 @@
 package com.crosschain.service;
 
+import com.crosschain.auth.AuthManager;
 import com.crosschain.channel.ChannelManager;
 import com.crosschain.common.CommonCrossChainRequest;
-import com.crosschain.dispatch.DispatcherBase;
+import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,9 @@ public class ServerFace {
     @Resource
     private ChannelManager channelManager;
 
+    @Resource
+    private AuthManager authManager;
+
     @PostMapping("/crosschain")
     public String resolve(@RequestParam("channel") String channel,
                           @RequestParam("des_chain") String desChain,
@@ -34,6 +38,10 @@ public class ServerFace {
                           @RequestParam(value = "mode",defaultValue = "default") String mode,
                           @RequestParam("user_name") String username,
                           @RequestParam("user_token") String token) {
+        if (!authManager.authForUser(username, token)) {
+            return "authentication failed!";
+        }
+
         CommonCrossChainRequest src = new CommonCrossChainRequest();
         src.setChainName(srcChain);
         src.setContract(srcContract);
@@ -45,7 +53,7 @@ public class ServerFace {
         des.setFunction(desFunc);
         des.setArgs(args);
 
-        DispatcherBase dispatcher;
+        Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src,des,channel);
         try {
             dispatcher = dispatcherManager.getDispatcher(mode);

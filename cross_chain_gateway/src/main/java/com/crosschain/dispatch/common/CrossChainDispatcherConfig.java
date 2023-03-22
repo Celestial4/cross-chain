@@ -1,4 +1,4 @@
-package com.crosschain.dispatch;
+package com.crosschain.dispatch.common;
 
 import com.crosschain.channel.ChannelManager;
 import jakarta.annotation.Resource;
@@ -12,8 +12,8 @@ public class CrossChainDispatcherConfig {
     private ChannelManager channelManager;
 
     @Bean
-    public DispatcherBase defaultDispatcher(){
-        DispatcherBase dispatcher = new DefaultDispatcher();
+    public CommonCrossChainDispatcherBase defaultDispatcher(){
+        CommonCrossChainDispatcherBase dispatcher = new DefaultCommonCrossChainDispatcher();
         dispatcher.setChannelManager(channelManager);
 
         dispatcher.init();

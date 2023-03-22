@@ -4,7 +4,11 @@ import java.util.List;
 
 public class AuthManager {
 
-    private AuthDB db;
+    public void setDb(AuthSource db) {
+        this.db = db;
+    }
+
+    private AuthSource db;
 
     public boolean authForUser(String user, String passwd) {
         List<AuthEntity> allUser = db.getAllUser();
