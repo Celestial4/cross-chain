@@ -4,7 +4,8 @@ import com.crosschain.audit.IAuditEntity;
 import com.crosschain.common.*;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.group.GroupManager;
-import com.crosschain.service.CrossChainRequest;
+import com.crosschain.dispatch.CrossChainRequest;
+import com.crosschain.service.ResponseEntity;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

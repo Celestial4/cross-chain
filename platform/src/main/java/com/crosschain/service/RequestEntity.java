@@ -1,4 +1,4 @@
-package com.crosschain.common;
+package com.crosschain.service;
 
 import lombok.Data;
 

@@ -2,8 +2,7 @@ package com.crosschain.service;
 
 import com.crosschain.auth.AuthManager;
 import com.crosschain.common.CommonCrossChainRequest;
-import com.crosschain.common.RequestEntity;
-import com.crosschain.common.ResponseEntity;
+import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
 import com.crosschain.group.GroupManager;

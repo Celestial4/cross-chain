@@ -1,4 +1,4 @@
-package com.crosschain.service;
+package com.crosschain.dispatch;
 
 import com.crosschain.common.CommonCrossChainRequest;
 
