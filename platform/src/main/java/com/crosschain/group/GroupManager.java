@@ -1,7 +1,7 @@
 package com.crosschain.group;
 
 import com.crosschain.common.Chain;
-import com.crosschain.common.Channel;
+import com.crosschain.common.Group;
 import com.crosschain.common.Loggers;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -11,7 +11,7 @@ import java.util.*;
 @Slf4j
 public class GroupManager {
 
-    private final Map<String, Channel> channels = new HashMap<>();
+    private final Map<String, Group> channels = new HashMap<>();
 
     public void setDs(GroupSource ds) {
         this.ds = ds;
@@ -20,15 +20,15 @@ public class GroupManager {
     private GroupSource ds;
 
     public void init() {
-        List<Channel> channels = ds.getAllGroups();
-        for (Channel c : channels) {
+        List<Group> groups = ds.getAllGroups();
+        for (Group c : groups) {
             this.channels.put(c.getChannelName(), c);
         }
         log.info(Loggers.LOGFORMAT, "channelManager initialized!");
     }
 
-    public Channel getChannel(String channelName) {
-        Channel ret = null;
+    public Group getChannel(String channelName) {
+        Group ret = null;
         if (channels.containsKey(channelName)) {
             ret = channels.get(channelName);
         } else {
@@ -55,30 +55,30 @@ public class GroupManager {
         List<Chain> allChain = getChains(chains);
         if (channels.containsKey(channelName)) {
             //add to existed channel
-            Channel existedChannel = channels.get(channelName);
+            Group existedGroup = channels.get(channelName);
             if (!allChain.isEmpty()) {
 
 
                 //update cache
-                existedChannel.addMember(allChain);
+                existedGroup.addMember(allChain);
                 for (Chain chain : allChain) {
-                    cnt = ds.associate(existedChannel.getChannelId(),chain.getChainId());
+                    cnt = ds.associate(existedGroup.getChannelId(),chain.getChainId());
                 }
                 log.info(Loggers.LOGFORMAT, String.format("add to channel:[%s], associated chains:[%s]", channelName, Arrays.toString(chains)));
             }
         } else {
-            Channel channel = new Channel();
-            channel.setChannelId(UUID.randomUUID().toString());
-            channel.setChannelName(channelName);
-            channel.setStatus(status);
+            Group group = new Group();
+            group.setChannelId(UUID.randomUUID().toString());
+            group.setChannelName(channelName);
+            group.setStatus(status);
 
             if (!allChain.isEmpty()) {
-                channel.addMember(allChain);
+                group.addMember(allChain);
             }
 
-            channels.put(channel.getChannelName(), channel);
-            cnt = ds.newGroup(channel);
-            ds.associate(channel);
+            channels.put(group.getChannelName(), group);
+            cnt = ds.newGroup(group);
+            ds.associate(group);
             log.info(Loggers.LOGFORMAT, String.format("create channel:[%s], associated chains:[%s]", channelName, Arrays.toString(chains)));
         }
 
@@ -116,7 +116,7 @@ public class GroupManager {
 
     public int removeTo(String srcCnlName, String desCnlName, String cName) {
         if (Strings.isEmpty(desCnlName) && channels.containsKey(srcCnlName)) {
-            Channel src_cnl = channels.get(srcCnlName);
+            Group src_cnl = channels.get(srcCnlName);
             Chain srcChain = src_cnl.getChain(cName);
             if (Objects.nonNull(srcChain)) {
                 String src_cnl_id = src_cnl.getChannelId();
@@ -126,8 +126,8 @@ public class GroupManager {
             return 0;
         }
         if (channels.containsKey(srcCnlName) && channels.containsKey(desCnlName)) {
-            Channel src_cnl = channels.get(srcCnlName);
-            Channel des_cnl = channels.get(desCnlName);
+            Group src_cnl = channels.get(srcCnlName);
+            Group des_cnl = channels.get(desCnlName);
             Chain srcChain = src_cnl.getChain(cName);
             if (Objects.nonNull(srcChain)) {
                 String src_cnl_id = src_cnl.getChannelId();

@@ -4,12 +4,12 @@ import com.crosschain.auth.AuthEntity;
 import org.springframework.jdbc.core.RowMapper;
 
 public class Mappers {
-    public static RowMapper<Channel> channelRowMapper = (resultSet, row) -> {
-        Channel channel = new Channel();
-        channel.setChannelId(resultSet.getString(1));
-        channel.setChannelName(resultSet.getString(2));
-        channel.setStatus(resultSet.getInt(3));
-        return channel;
+    public static RowMapper<Group> channelRowMapper = (resultSet, row) -> {
+        Group group = new Group();
+        group.setChannelId(resultSet.getString(1));
+        group.setChannelName(resultSet.getString(2));
+        group.setStatus(resultSet.getInt(3));
+        return group;
     };
 
     public static RowMapper<Chain> chainRowMapper = (res, row) -> {

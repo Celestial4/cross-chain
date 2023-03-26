@@ -12,14 +12,14 @@ import java.util.Objects;
 public class DefaultCommonCrossChainDispatcher extends CommonCrossChainDispatcherBase{
 
     @Override
-    CommonCrossChainResponse processDes(CommonCrossChainRequest req, Channel channel) throws
+    CommonCrossChainResponse processDes(CommonCrossChainRequest req, Group group) throws
             Exception {
-        Chain desChain = channel.getChain(req.getChainName());
+        Chain desChain = group.getChain(req.getChainName());
         if (!Objects.nonNull(desChain) && desChain.getStatus() !=0) {
             throw new Exception("目标链不在跨链通道中或目标链当前不可用");
         }
 
-        String socAddress = maps.get(req.getChainName());
+        String socAddress = systemInfo.getServiceAddr(req.getChainName());
         String[] socketInfo = socAddress.split(":");
 
         byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
@@ -30,9 +30,9 @@ public class DefaultCommonCrossChainDispatcher extends CommonCrossChainDispatche
     }
 
     @Override
-    void processSrc(CommonCrossChainRequest req, Channel channel) throws Exception {
-        Chain srcChain = channel.getChain(req.getChainName());
-        String socAddress = maps.get(req.getChainName());
+    CommonCrossChainResponse processSrc(CommonCrossChainRequest req, Group group) throws Exception {
+        Chain srcChain = group.getChain(req.getChainName());
+        String socAddress = systemInfo.getServiceAddr(req.getChainName());
 
         if (!Objects.nonNull(srcChain) && srcChain.getStatus() != 0) {
             throw new Exception("源链不在跨链通道中或源链当前不可用");
@@ -44,12 +44,13 @@ public class DefaultCommonCrossChainDispatcher extends CommonCrossChainDispatche
         String res = new String(data, StandardCharsets.UTF_8);
 
         log.info(Loggers.LOGFORMAT, "received from blockchain:" + res);
+        return new CommonCrossChainResponse(res);
     }
 
     @Override
     String processResult(CommonCrossChainResponse rep) {
         //todo 此处实现对目标链的返回结果处理
-        return null;
+        return "";
     }
 
     @Override

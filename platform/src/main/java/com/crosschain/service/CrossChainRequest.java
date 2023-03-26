@@ -5,13 +5,13 @@ import com.crosschain.common.CommonCrossChainRequest;
 public class CrossChainRequest{
     private CommonCrossChainRequest srcChain;
     private CommonCrossChainRequest desChain;
-    private String channel;
+    private String group;
 
 
-    public CrossChainRequest(CommonCrossChainRequest srcChain, CommonCrossChainRequest desChain, String channel) {
+    public CrossChainRequest(CommonCrossChainRequest srcChain, CommonCrossChainRequest desChain, String group) {
         this.srcChain = srcChain;
         this.desChain = desChain;
-        this.channel = channel;
+        this.group = group;
     }
 
     public CommonCrossChainRequest getSrcChainRequest() {
@@ -22,7 +22,7 @@ public class CrossChainRequest{
         return desChain;
     }
 
-    public String getChannel() {
-        return channel;
+    public String getGroup() {
+        return group;
     }
 }

@@ -29,9 +29,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    //testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'com.mysql:mysql-connector-j:8.0.31'
-
+    implementation 'com.alibaba.fastjson2:fastjson2:2.0.23'
 }
 
 tasks.named('test') {

@@ -1,17 +1,18 @@
 package com.crosschain.service;
 
 import com.crosschain.auth.AuthManager;
-import com.crosschain.group.GroupManager;
 import com.crosschain.common.CommonCrossChainRequest;
+import com.crosschain.common.RequestEntity;
+import com.crosschain.common.ResponseEntity;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
-import javax.annotation.Resource;
+import com.crosschain.group.GroupManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
 
 @RestController
 @Slf4j
@@ -26,41 +27,35 @@ public class ServerFace {
     @Resource
     private AuthManager authManager;
 
+
     @PostMapping("/crosschain")
-    public String resolve(@RequestParam("channel") String channel,
-                          @RequestParam("des_chain") String desChain,
-                          @RequestParam("des_contract") String desContract,
-                          @RequestParam("des_function") String desFunc,
-                          @RequestParam(value = "args",defaultValue = "") String args,
-                          @RequestParam("src_contract") String srcContract,
-                          @RequestParam("src_function") String srcFunc,
-                          @RequestParam(value = "mode",defaultValue = "default") String mode,
-                          @RequestParam("user_name") String username,
-                          @RequestParam("user_token") String token) {
-        if (!authManager.authForUser(username, token)) {
-            return "authentication failed!";
+    @ResponseBody
+    public String resolve(@RequestBody RequestEntity requestEntity) {
+        if (!authManager.authForUser(requestEntity.getUserName(), requestEntity.getUserToken())) {
+            return new ResponseEntity("authentication failed!").getErrorMsg();
         }
 
         CommonCrossChainRequest src = new CommonCrossChainRequest();
         src.setChainName("local");
-        src.setContract(srcContract);
-        src.setFunction(srcFunc);
+        src.setContract(requestEntity.getSrcContract());
+        src.setFunction(requestEntity.getSrcFunction());
 
         CommonCrossChainRequest des = new CommonCrossChainRequest();
-        des.setChainName(desChain);
-        des.setContract(desContract);
-        des.setFunction(desFunc);
-        des.setArgs(args);
+        des.setChainName(requestEntity.getDesChain());
+        des.setContract(requestEntity.getDesContract());
+        des.setFunction(requestEntity.getDesFunction());
+        des.setArgs(requestEntity.getArgs());
 
         Dispatcher dispatcher;
-        CrossChainRequest req = new CrossChainRequest(src,des,channel);
+        CrossChainRequest req = new CrossChainRequest(src,des, requestEntity.getGroup());
+        ResponseEntity response;
         try {
-            dispatcher = dispatcherManager.getDispatcher(mode);
+            dispatcher = dispatcherManager.getDispatcher(requestEntity.getMode());
+            response = dispatcher.process(req);
         } catch (Exception e) {
             return e.getMessage();
         }
-
-        return dispatcher.process(req);
+        return String.format("desChainResult:---\n%s\nsrcChainResult:---\n%s\n",response.getDesResult(),response.getSrcResult());
     }
 
     @PostMapping("/add_chain")

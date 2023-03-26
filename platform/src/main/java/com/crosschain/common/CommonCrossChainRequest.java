@@ -8,6 +8,6 @@ public class CommonCrossChainRequest {
     private String chainName;
     private String contract;
     private String function;
-    private String args;
+    private String args="";
 
 }

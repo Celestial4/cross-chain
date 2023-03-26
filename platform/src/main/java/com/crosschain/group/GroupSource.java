@@ -1,7 +1,7 @@
 package com.crosschain.group;
 
 import com.crosschain.common.Chain;
-import com.crosschain.common.Channel;
+import com.crosschain.common.Group;
 import com.crosschain.common.Loggers;
 import com.crosschain.common.Mappers;
 import org.slf4j.Logger;
@@ -21,21 +21,21 @@ public class GroupSource {
     private JdbcTemplate sql;
 
 
-    public Channel getGroup(String channelName) {
-        Channel c = sql.queryForObject("select * from channel where channel_name=?", Mappers.channelRowMapper, channelName);
+    public Group getGroup(String channelName) {
+        Group c = sql.queryForObject("select * from channel where channel_name=?", Mappers.channelRowMapper, channelName);
 
         c.getMembers().addAll(getRelatedChains(channelName));
         logger.info(Loggers.LOGFORMAT, String.format("read channel[%s] successfully!", c.getChannelName()));
         return c;
     }
 
-    public List<Channel> getAllGroups() {
-        List<Channel> channels = sql.query("select * from channel", Mappers.channelRowMapper, null);
-        for (Channel c : channels) {
+    public List<Group> getAllGroups() {
+        List<Group> groups = sql.query("select * from channel", Mappers.channelRowMapper);
+        for (Group c : groups) {
             List<Chain> members = c.getMembers();
             members.addAll(getRelatedChains(c.getChannelName()));
         }
-        return channels;
+        return groups;
     }
 
     public List<Chain> getChains(String chainNames) {
@@ -46,10 +46,10 @@ public class GroupSource {
         return sql.query("select chain_id,chain_name,chain_status from (select t1.channel_name name,t3.*  from channel t1,channel_chain t2,chain t3 where t1.channel_id=t2.channel_id and t2.chain_id=t3.chain_id) t4 where name=?", Mappers.chainRowMapper, channel);
     }
 
-    public int newGroup(Channel channel) {
+    public int newGroup(Group group) {
         int cnt = 0;
         try {
-            cnt = sql.update("insert into channel values(?,?,?)", channel.getChannelId(), channel.getChannelName(), channel.getStatus());
+            cnt = sql.update("insert into channel values(?,?,?)", group.getChannelId(), group.getChannelName(), group.getStatus());
             logger.info(Loggers.LOGFORMAT, "create channel successfully!");
         } catch (Exception e) {
             logger.error(Loggers.LOGFORMAT, e.getMessage());
@@ -59,13 +59,13 @@ public class GroupSource {
 
     /**
      * 新增通道时关联这条通道的所有链
-     * @param channel
+     * @param group
      * @return
      */
-    public int associate(Channel channel) {
+    public int associate(Group group) {
         int cnt = 0;
-        for (Chain chain : channel.getMembers()) {
-            cnt += sql.update("insert into channel_chain values(?,?)", channel.getChannelId(), chain.getChainId());
+        for (Chain chain : group.getMembers()) {
+            cnt += sql.update("insert into channel_chain values(?,?)", group.getChannelId(), chain.getChainId());
         }
 
         logger.info(Loggers.LOGFORMAT, "build channel chain relationship successfully!, chain counts:" + cnt);

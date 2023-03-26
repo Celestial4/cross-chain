@@ -1,7 +1,8 @@
 package com.crosschain.dispatch;
 
+import com.crosschain.common.ResponseEntity;
 import com.crosschain.service.CrossChainRequest;
 
 public interface Dispatcher {
-    String process(CrossChainRequest req);
+    ResponseEntity process(CrossChainRequest req);
 }

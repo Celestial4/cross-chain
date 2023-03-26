@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class Channel {
+public class Group {
 
     private String ChannelId;
     private String ChannelName;
