@@ -11,6 +11,8 @@ public class App {
     private static Logger logger = LoggerFactory.getLogger(App.class);
     public static void main(String[] args) {
         try {
+            Fabrics helper = new Fabrics();
+            helper.init();
             if (CommonRule.init(Fabrics.getDeployPort(), FabricStub.class.getMethod("handleRequest", String.class))) {
                 logger.info(Fabrics.logPlacehdr(),"server started. start serving!");
             } else {

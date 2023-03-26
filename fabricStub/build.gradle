@@ -31,6 +31,8 @@ test {
 }
 
 jar {
+    destinationDir file('dist/app')
+    archiveName(project.name + "-" + project.version + '.jar')
     manifest {
         attributes(
                 'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' '),

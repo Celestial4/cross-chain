@@ -26,9 +26,9 @@ public class Fabrics {
 
     private static ManagedChannel channel = null;
 
-    {
+    public void init(){
         try {
-            pros.load(getClass().getResourceAsStream("fabric.config"));
+            pros.load(getClass().getClassLoader().getResourceAsStream("fabric.config"));
         } catch (IOException e) {
             e.printStackTrace();
         }
