@@ -1,7 +1,7 @@
 package com.crosschain.service;
 
 import com.crosschain.auth.AuthManager;
-import com.crosschain.channel.ChannelManager;
+import com.crosschain.group.GroupManager;
 import com.crosschain.common.CommonCrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
@@ -21,7 +21,7 @@ public class ServerFace {
     private DispatcherManager dispatcherManager;
 
     @Resource
-    private ChannelManager channelManager;
+    private GroupManager groupManager;
 
     @Resource
     private AuthManager authManager;
@@ -32,7 +32,7 @@ public class ServerFace {
                           @RequestParam("des_contract") String desContract,
                           @RequestParam("des_function") String desFunc,
                           @RequestParam(value = "args",defaultValue = "") String args,
-                          @RequestParam("src_chain") String srcChain,
+                          //@RequestParam("src_chain") String srcChain,
                           @RequestParam("src_contract") String srcContract,
                           @RequestParam("src_function") String srcFunc,
                           @RequestParam(value = "mode",defaultValue = "default") String mode,
@@ -43,7 +43,7 @@ public class ServerFace {
         }
 
         CommonCrossChainRequest src = new CommonCrossChainRequest();
-        src.setChainName(srcChain);
+        src.setChainName("local");
         src.setContract(srcContract);
         src.setFunction(srcFunc);
 
@@ -67,7 +67,7 @@ public class ServerFace {
     @PostMapping("/add_chain")
     public String addChain(@Validated @RequestParam("chain_name") String chainName,
                            @RequestParam(value = "chain_status", defaultValue = "0") int status) {
-        int cnt = channelManager.putChain(chainName, status);
+        int cnt = groupManager.putChain(chainName, status);
         return cnt > 0 ? "successful" : "failed";
     }
 
@@ -79,7 +79,7 @@ public class ServerFace {
         if (Strings.isNotEmpty(chains)) {
             split = chains.split(",");
         }
-        int cnt = channelManager.putChannel(channelName, status, split);
+        int cnt = groupManager.putChannel(channelName, status, split);
         return cnt > 0 ? "successful" : "failed";
     }
 
@@ -89,9 +89,9 @@ public class ServerFace {
                        @RequestParam("chain_n") String chain_n) {
         int res_code = 1;
         if (Strings.isEmpty(des_cnl_n)) {
-            res_code = channelManager.removeTo(sr_cnl_n, null, chain_n);
+            res_code = groupManager.removeTo(sr_cnl_n, null, chain_n);
         } else {
-            res_code=channelManager.removeTo(sr_cnl_n, des_cnl_n, chain_n);
+            res_code= groupManager.removeTo(sr_cnl_n, des_cnl_n, chain_n);
         }
         return res_code == 1 ? "operation failed!" : "operation success!";
     }
@@ -100,7 +100,7 @@ public class ServerFace {
     public String update(@RequestParam(value = "type", defaultValue = "1") int type,
                          @RequestParam("target") String target,
                          @RequestParam("status") int status) {
-        int res_code = channelManager.updateStatus(type, target, status);
+        int res_code = groupManager.updateStatus(type, target, status);
         return res_code == 1 ? "operation failed!" : "operation success!";
     }
 

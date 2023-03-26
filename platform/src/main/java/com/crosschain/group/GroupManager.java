@@ -1,4 +1,4 @@
-package com.crosschain.channel;
+package com.crosschain.group;
 
 import com.crosschain.common.Chain;
 import com.crosschain.common.Channel;
@@ -10,18 +10,18 @@ import org.apache.logging.log4j.util.Strings;
 import java.util.*;
 
 @Slf4j
-public class ChannelManager {
+public class GroupManager {
 
     private final Map<String, Channel> channels = new HashMap<>();
 
-    public void setDs(ChannelSource ds) {
+    public void setDs(GroupSource ds) {
         this.ds = ds;
     }
 
-    private ChannelSource ds;
+    private GroupSource ds;
 
     public void init() {
-        List<Channel> channels = ds.getAllChannel();
+        List<Channel> channels = ds.getAllGroups();
         for (Channel c : channels) {
             this.channels.put(c.getChannelName(), c);
         }
@@ -33,7 +33,7 @@ public class ChannelManager {
         if (channels.containsKey(channelName)) {
             ret = channels.get(channelName);
         } else {
-            ret = ds.getChannel(channelName);
+            ret = ds.getGroup(channelName);
         }
 
         return ret;
@@ -78,7 +78,7 @@ public class ChannelManager {
             }
 
             channels.put(channel.getChannelName(), channel);
-            cnt = ds.newChannel(channel);
+            cnt = ds.newGroup(channel);
             ds.associate(channel);
             log.info(Loggers.LOGFORMAT, String.format("create channel:[%s], associated chains:[%s]", channelName, Arrays.toString(chains)));
         }

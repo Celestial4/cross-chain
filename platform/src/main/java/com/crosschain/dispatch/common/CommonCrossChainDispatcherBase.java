@@ -1,6 +1,6 @@
 package com.crosschain.dispatch.common;
 
-import com.crosschain.channel.ChannelManager;
+import com.crosschain.group.GroupManager;
 import com.crosschain.common.Channel;
 import com.crosschain.common.CommonCrossChainRequest;
 import com.crosschain.common.CommonCrossChainResponse;
@@ -18,11 +18,11 @@ import java.util.Set;
 @Slf4j
 public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
 
-    public void setChannelManager(ChannelManager channelManager) {
-        this.channelManager = channelManager;
+    public void setChannelManager(GroupManager groupManager) {
+        this.groupManager = groupManager;
     }
 
-    private ChannelManager channelManager;
+    private GroupManager groupManager;
 
     protected final Map<String, String> maps = new HashMap<>();
 
@@ -51,7 +51,7 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
     @Override
     public String process(CrossChainRequest request) {
         try {
-            Channel channel = channelManager.getChannel(request.getChannel());
+            Channel channel = groupManager.getChannel(request.getChannel());
 
             if (channel.getStatus() == 0) {
                 CommonCrossChainResponse DesRes = processDes(request.getDesChainRequest(), channel);
@@ -60,6 +60,8 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
                 srcChainRequest.setArgs(processResult(DesRes));
 
                 processSrc(srcChainRequest, channel);
+
+
                 return "crosschain success!";
             } else {
                 //todo 失败请求的后续处理

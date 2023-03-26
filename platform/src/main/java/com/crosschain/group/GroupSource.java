@@ -1,4 +1,4 @@
-package com.crosschain.channel;
+package com.crosschain.group;
 
 import com.crosschain.common.Chain;
 import com.crosschain.common.Channel;
@@ -13,15 +13,15 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class ChannelSource {
+public class GroupSource {
 
-    private final Logger logger = LoggerFactory.getLogger(ChannelSource.class);
+    private final Logger logger = LoggerFactory.getLogger(GroupSource.class);
 
     @Resource
     private JdbcTemplate sql;
 
 
-    public Channel getChannel(String channelName) {
+    public Channel getGroup(String channelName) {
         Channel c = sql.queryForObject("select * from channel where channel_name=?", Mappers.channelRowMapper, channelName);
 
         c.getMembers().addAll(getRelatedChains(channelName));
@@ -29,7 +29,7 @@ public class ChannelSource {
         return c;
     }
 
-    public List<Channel> getAllChannel() {
+    public List<Channel> getAllGroups() {
         List<Channel> channels = sql.query("select * from channel", Mappers.channelRowMapper, null);
         for (Channel c : channels) {
             List<Chain> members = c.getMembers();
@@ -46,7 +46,7 @@ public class ChannelSource {
         return sql.query("select chain_id,chain_name,chain_status from (select t1.channel_name name,t3.*  from channel t1,channel_chain t2,chain t3 where t1.channel_id=t2.channel_id and t2.chain_id=t3.chain_id) t4 where name=?", Mappers.chainRowMapper, channel);
     }
 
-    public int newChannel(Channel channel) {
+    public int newGroup(Channel channel) {
         int cnt = 0;
         try {
             cnt = sql.update("insert into channel values(?,?,?)", channel.getChannelId(), channel.getChannelName(), channel.getStatus());

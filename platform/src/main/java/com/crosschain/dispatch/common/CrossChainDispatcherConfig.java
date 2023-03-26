@@ -1,6 +1,6 @@
 package com.crosschain.dispatch.common;
 
-import com.crosschain.channel.ChannelManager;
+import com.crosschain.group.GroupManager;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,12 +9,12 @@ import org.springframework.context.annotation.Configuration;
 public class CrossChainDispatcherConfig {
 
     @Resource
-    private ChannelManager channelManager;
+    private GroupManager groupManager;
 
     @Bean
     public CommonCrossChainDispatcherBase defaultDispatcher(){
         CommonCrossChainDispatcherBase dispatcher = new DefaultCommonCrossChainDispatcher();
-        dispatcher.setChannelManager(channelManager);
+        dispatcher.setChannelManager(groupManager);
 
         dispatcher.init();
         return dispatcher;
