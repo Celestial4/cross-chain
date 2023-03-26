@@ -38,5 +38,31 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-apply plugin: 'java'
-apply plugin: 'io.spring.dependency-management'
+jar{
+    destinationDir file('dist/app')
+    archiveName(project.name + "-" + project.version + '.jar')
+
+    manifest {
+        attributes(
+                'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' '),
+                'Main-Class': 'com.crosschain.CrossChainGatewayApplication'
+        )
+    }
+
+    doLast {
+        copy {
+            from file('src/main/resources')
+            into 'dist/conf'
+        }
+
+        copy {
+            from configurations.runtimeClasspath
+            into 'dist/lib'
+        }
+
+        copy {
+            from file('script/')
+            into 'dist'
+        }
+    }
+}
