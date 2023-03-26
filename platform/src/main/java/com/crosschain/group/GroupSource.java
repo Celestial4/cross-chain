@@ -4,12 +4,12 @@ import com.crosschain.common.Chain;
 import com.crosschain.common.Channel;
 import com.crosschain.common.Loggers;
 import com.crosschain.common.Mappers;
-import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 @Component

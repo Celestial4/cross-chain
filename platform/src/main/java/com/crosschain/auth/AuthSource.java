@@ -1,10 +1,10 @@
 package com.crosschain.auth;
 
 import com.crosschain.common.Mappers;
-import jakarta.annotation.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 @Component

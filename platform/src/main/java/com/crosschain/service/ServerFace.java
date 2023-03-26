@@ -5,7 +5,7 @@ import com.crosschain.group.GroupManager;
 import com.crosschain.common.CommonCrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.validation.annotation.Validated;

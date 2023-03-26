@@ -3,7 +3,6 @@ package com.crosschain.group;
 import com.crosschain.common.Chain;
 import com.crosschain.common.Channel;
 import com.crosschain.common.Loggers;
-import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 
@@ -100,8 +99,12 @@ public class GroupManager {
     public int updateStatus(int type, String target, int status) {
         try {
             switch (type) {
-                case 1 -> ds.updateChannel(target, status);
-                case 2 -> ds.updateChain(target, status);
+                case 1:
+                    ds.updateChannel(target, status);
+                    break;
+                case 2:
+                    ds.updateChain(target, status);
+                    break;
             }
         } catch (Exception e) {
             log.error(Loggers.LOGFORMAT, "update [%s]", target);
@@ -111,7 +114,7 @@ public class GroupManager {
         return 0;
     }
 
-    public int removeTo(String srcCnlName, @Nullable String desCnlName, String cName) {
+    public int removeTo(String srcCnlName, String desCnlName, String cName) {
         if (Strings.isEmpty(desCnlName) && channels.containsKey(srcCnlName)) {
             Channel src_cnl = channels.get(srcCnlName);
             Chain srcChain = src_cnl.getChain(cName);
