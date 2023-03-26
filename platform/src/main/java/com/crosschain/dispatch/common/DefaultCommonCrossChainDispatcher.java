@@ -1,5 +1,6 @@
 package com.crosschain.dispatch.common;
 
+import com.crosschain.audit.IAuditEntity;
 import com.crosschain.common.*;
 import com.crosschain.dispatch.CrossChainClient;
 import lombok.extern.slf4j.Slf4j;
@@ -45,9 +46,14 @@ public class DefaultCommonCrossChainDispatcher extends CommonCrossChainDispatche
         log.info(Loggers.LOGFORMAT, "received from blockchain:" + res);
     }
 
-    //todo 对目标链的返回结果处理
     @Override
     String processResult(CommonCrossChainResponse rep) {
+        //todo 此处实现对目标链的返回结果处理
         return null;
+    }
+
+    @Override
+    void processAudit(IAuditEntity entity) {
+        //todo 此处实现存证逻辑
     }
 }

@@ -32,7 +32,6 @@ public class ServerFace {
                           @RequestParam("des_contract") String desContract,
                           @RequestParam("des_function") String desFunc,
                           @RequestParam(value = "args",defaultValue = "") String args,
-                          //@RequestParam("src_chain") String srcChain,
                           @RequestParam("src_contract") String srcContract,
                           @RequestParam("src_function") String srcFunc,
                           @RequestParam(value = "mode",defaultValue = "default") String mode,

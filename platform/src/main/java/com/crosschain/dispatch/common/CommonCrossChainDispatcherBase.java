@@ -1,5 +1,6 @@
 package com.crosschain.dispatch.common;
 
+import com.crosschain.audit.IAuditEntity;
 import com.crosschain.group.GroupManager;
 import com.crosschain.common.Channel;
 import com.crosschain.common.CommonCrossChainRequest;
@@ -32,6 +33,8 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
 
     abstract String processResult(CommonCrossChainResponse rep);
 
+    abstract void processAudit(IAuditEntity entity);
+
     public void init() {
         try {
             Properties pros = new Properties();
@@ -61,6 +64,9 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
 
                 processSrc(srcChainRequest, channel);
 
+                //todo 处理存证，由DesRes得到auditEntity,并在子类中实现相应的存证逻辑
+                IAuditEntity auditEntity = null;
+                processAudit(auditEntity);
 
                 return "crosschain success!";
             } else {
