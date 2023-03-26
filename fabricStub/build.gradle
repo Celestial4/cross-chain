@@ -1,10 +1,10 @@
 import com.sun.org.apache.bcel.internal.classfile.ModuleMainClass
 
 plugins {
-    id 'application'
+    id 'java'
 }
 
-version 'unspecified'
+version '1.0'
 
 repositories {
     maven { url 'https://maven.fabric.io/public'}
@@ -30,6 +30,28 @@ test {
     useJUnitPlatform()
 }
 
-mainClassName = "com.crosschain.fabric.App"
-apply plugin: 'java'
-apply plugin: 'application'
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' '),
+                'Main-Class': 'com.crosschain.fabric.App'
+        )
+    }
+
+    doLast {
+        copy {
+            from file('src/main/resources')
+            into 'dist/conf'
+        }
+
+        copy {
+            from configurations.runtimeClasspath
+            into 'dist/lib'
+        }
+
+        copy {
+            from file('script/')
+            into 'dist'
+        }
+    }
+}
