@@ -8,8 +8,8 @@ import java.util.List;
 @Data
 public class Group {
 
-    private String ChannelId;
-    private String ChannelName;
+    private String GroupId;
+    private String GroupName;
     private Integer status;
     private List<Chain> members = new ArrayList();
 

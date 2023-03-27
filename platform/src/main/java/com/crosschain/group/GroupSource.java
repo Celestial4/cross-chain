@@ -2,7 +2,6 @@ package com.crosschain.group;
 
 import com.crosschain.common.Chain;
 import com.crosschain.common.Group;
-import com.crosschain.common.Loggers;
 import com.crosschain.common.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -21,25 +21,29 @@ public class GroupSource {
     private JdbcTemplate sql;
 
 
-    public Group getGroup(String channelName) {
+    public Group getGroup(String channelName) throws Exception {
         Group c = sql.queryForObject("select * from channel where channel_name=?", Mappers.channelRowMapper, channelName);
-
-        c.getMembers().addAll(getRelatedChains(channelName));
-        logger.info(Loggers.LOGFORMAT, String.format("read channel[%s] successfully!", c.getChannelName()));
+        if (c == null) {
+            throw new Exception("跨链群组不存在");
+        }
+        c.addMember(getRelatedChains(channelName));
+        logger.debug("[get group]: {},{}", c.getGroupName(), c.getMembers());
         return c;
     }
 
     public List<Group> getAllGroups() {
         List<Group> groups = sql.query("select * from channel", Mappers.channelRowMapper);
         for (Group c : groups) {
-            List<Chain> members = c.getMembers();
-            members.addAll(getRelatedChains(c.getChannelName()));
+            c.addMember(getRelatedChains(c.getGroupName()));
         }
         return groups;
     }
 
     public List<Chain> getChains(String chainNames) {
-        return sql.query("select * from chain where chain_name in (?)", Mappers.chainRowMapper, chainNames);
+        String stamt = String.format("select * from chain where chain_name in (%s)", chainNames);
+        List<Chain> r = sql.query(stamt, Mappers.chainRowMapper);
+        logger.debug("[query chains]: {},{}", r.size(), Arrays.toString(r.toArray()));
+        return r;
     }
 
     private List<Chain> getRelatedChains(String channel) {
@@ -49,27 +53,27 @@ public class GroupSource {
     public int newGroup(Group group) {
         int cnt = 0;
         try {
-            cnt = sql.update("insert into channel values(?,?,?)", group.getChannelId(), group.getChannelName(), group.getStatus());
-            logger.info(Loggers.LOGFORMAT, "create channel successfully!");
+            cnt = sql.update("insert into channel values(?,?,?)", group.getGroupId(), group.getGroupName(), group.getStatus());
+            logger.debug("[new group]:create channel successfully");
         } catch (Exception e) {
-            logger.error(Loggers.LOGFORMAT, e.getMessage());
+            logger.error(e.getMessage());
         }
         return cnt;
     }
 
     /**
      * 新增通道时关联这条通道的所有链
+     *
      * @param group
-     * @return
      */
-    public int associate(Group group) {
-        int cnt = 0;
-        for (Chain chain : group.getMembers()) {
-            cnt += sql.update("insert into channel_chain values(?,?)", group.getChannelId(), chain.getChainId());
+    public void associate(Group group) {
+        try {
+            for (Chain chain : group.getMembers()) {
+                sql.update("insert into channel_chain values(?,?)", group.getGroupId(), chain.getChainId());
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
         }
-
-        logger.info(Loggers.LOGFORMAT, "build channel chain relationship successfully!, chain counts:" + cnt);
-        return cnt;
     }
 
     public int addChain(Chain... chain) {
@@ -78,20 +82,28 @@ public class GroupSource {
             for (Chain c : chain) {
                 cnt += sql.update("insert into chain values(?,?,?)", c.getChainId(), c.getChainName(), c.getStatus());
             }
-            logger.info(Loggers.LOGFORMAT, "insert chains successfully! total counts: " + cnt);
+            logger.info("[add new chain]: insert chains successfully total counts: {}", cnt);
         } catch (Exception e) {
-            logger.error(Loggers.LOGFORMAT, e.getMessage());
+            logger.error(e.getMessage());
         }
         return cnt;
     }
 
     /**
      * 关联一条链
+     *
      * @param channel_id 通道id
-     * @param chain_id  链id
+     * @param chain_id   链id
      */
     public int associate(String channel_id, String chain_id) {
-        return sql.update("insert into channel_chain values(?,?)", channel_id, chain_id);
+        int cnt = 0;
+        try {
+            cnt = sql.update("insert into channel_chain values(?,?)", channel_id, chain_id);
+            logger.debug("[associate group chain]:success");
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return cnt;
     }
 
     public void deAssociate(String channel_id, String chain_id) {

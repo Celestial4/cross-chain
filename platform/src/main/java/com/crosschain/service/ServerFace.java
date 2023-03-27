@@ -43,18 +43,24 @@ public class ServerFace {
         des.setChainName(requestEntity.getDesChain());
         des.setContract(requestEntity.getDesContract());
         des.setFunction(requestEntity.getDesFunction());
-        des.setArgs(requestEntity.getArgs());
+        des.setArgs(requestEntity.getArgs().replaceAll(",", "\r\n"));
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src,des, requestEntity.getGroup());
+        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}",des.getChainName(),des.getContract(),des.getFunction(),requestEntity.getArgs(),src.getChainName(),src.getContract(),src.getFunction());
         ResponseEntity response;
         try {
             dispatcher = dispatcherManager.getDispatcher(requestEntity.getMode());
+            log.debug("[acquired crosschain dispatcher]: {}",dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
-            return e.getMessage();
+            log.error(e.getStackTrace().toString());
+            response = new ResponseEntity(e.getMessage());
         }
-        return String.format("desChainResult:---\n%s\nsrcChainResult:---\n%s\n",response.getDesResult(),response.getSrcResult());
+        if (!response.getErrorMsg().equals("")) {
+            return response.getErrorMsg();
+        }
+        return String.format("[desChainResult]:---\n%s\n[srcChainResult]:---\n%s\n",response.getDesResult(),response.getSrcResult());
     }
 
     @PostMapping("/add_chain")
@@ -86,7 +92,7 @@ public class ServerFace {
         } else {
             res_code= groupManager.removeTo(sr_cnl_n, des_cnl_n, chain_n);
         }
-        return res_code == 1 ? "operation failed!" : "operation success!";
+        return res_code == 1 ? "operation failed" : "operation success";
     }
 
     @PostMapping("update")
@@ -94,7 +100,7 @@ public class ServerFace {
                          @RequestParam("target") String target,
                          @RequestParam("status") int status) {
         int res_code = groupManager.updateStatus(type, target, status);
-        return res_code == 1 ? "operation failed!" : "operation success!";
+        return res_code == 1 ? "operation failed" : "operation success";
     }
 
 }

@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.RowMapper;
 public class Mappers {
     public static RowMapper<Group> channelRowMapper = (resultSet, row) -> {
         Group group = new Group();
-        group.setChannelId(resultSet.getString(1));
-        group.setChannelName(resultSet.getString(2));
+        group.setGroupId(resultSet.getString(1));
+        group.setGroupName(resultSet.getString(2));
         group.setStatus(resultSet.getInt(3));
         return group;
     };

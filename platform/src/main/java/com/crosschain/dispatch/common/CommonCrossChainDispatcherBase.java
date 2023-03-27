@@ -2,9 +2,9 @@ package com.crosschain.dispatch.common;
 
 import com.crosschain.audit.IAuditEntity;
 import com.crosschain.common.*;
+import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.group.GroupManager;
-import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.service.ResponseEntity;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,33 +44,28 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
     }
 
     @Override
-    public ResponseEntity process(CrossChainRequest request) {
-        try {
-            Group group = groupManager.getChannel(request.getGroup());
+    public ResponseEntity process(CrossChainRequest request) throws Exception {
+        Group group = groupManager.getChannel(request.getGroup());
+        log.debug("[current group info]: {}", group.toString());
+        if (group.getStatus() == 0) {
+            log.info("[group info]: {},{}", group.getGroupName(), group.getStatus() == 0 ? "active" : "unavailable");
+            ResponseEntity response = new ResponseEntity();
+            setLocalChain(request);
+            CommonCrossChainResponse DesRes = processDes(request.getDesChainRequest(), group);
+            response.setDesResult(DesRes.getResult());
+            CommonCrossChainRequest srcChainRequest = request.getSrcChainRequest();
+            srcChainRequest.setArgs(processResult(DesRes));
 
-            if (group.getStatus() == 0) {
-                ResponseEntity response = new ResponseEntity();
-                setLocalChain(request);
-                CommonCrossChainResponse DesRes = processDes(request.getDesChainRequest(), group);
+            CommonCrossChainResponse srcRes = processSrc(srcChainRequest, group);
+            response.setSrcResult(srcRes.getResult());
+            //todo 处理存证，由DesRes得到auditEntity,并在子类中实现相应的存证逻辑
+            IAuditEntity auditEntity = null;
+            processAudit(auditEntity);
 
-                response.setDesResult(DesRes.getResult());
-                CommonCrossChainRequest srcChainRequest = request.getSrcChainRequest();
-                srcChainRequest.setArgs(processResult(DesRes));
-
-                CommonCrossChainResponse srcRes = processSrc(srcChainRequest, group);
-                response.setSrcResult(srcRes.getResult());
-                //todo 处理存证，由DesRes得到auditEntity,并在子类中实现相应的存证逻辑
-                IAuditEntity auditEntity = null;
-                processAudit(auditEntity);
-
-                return response;
-            } else {
-                //todo 失败请求的后续处理
-                log.error(Loggers.LOGFORMAT, "跨链请求失败，通道或者目标链处于冻结状态");
-            }
-        } catch (Exception e) {
-            return new ResponseEntity("crosschain failed");
+            return response;
+        } else {
+            //todo 失败请求的后续处理
+            return new ResponseEntity("跨链请求失败，跨链群组当前不可用");
         }
-        return new ResponseEntity("crosschain failed");
     }
 }

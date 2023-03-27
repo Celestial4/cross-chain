@@ -11,7 +11,7 @@ import java.util.*;
 @Slf4j
 public class GroupManager {
 
-    private final Map<String, Group> channels = new HashMap<>();
+    private final Map<String, Group> groups = new HashMap<>();
 
     public void setDs(GroupSource ds) {
         this.ds = ds;
@@ -22,27 +22,20 @@ public class GroupManager {
     public void init() {
         List<Group> groups = ds.getAllGroups();
         for (Group c : groups) {
-            this.channels.put(c.getChannelName(), c);
+            this.groups.put(c.getGroupName(), c);
+            log.debug("[group found]: {},{}",c.getGroupName(),c.getMembers());
         }
-        log.info(Loggers.LOGFORMAT, "channelManager initialized!");
     }
 
-    public Group getChannel(String channelName) {
-        Group ret = null;
-        if (channels.containsKey(channelName)) {
-            ret = channels.get(channelName);
-        } else {
-            ret = ds.getGroup(channelName);
-        }
-
-        return ret;
+    public Group getChannel(String channelName)throws Exception {
+        return ds.getGroup(channelName);
     }
 
     public List<Chain> getChains(String[] chainNames) {
         String allChain = "";
         if (!Objects.isNull(chainNames) && chainNames.length > 0) {
             for (String name : chainNames) {
-                allChain += String.format("%s,", name);
+                allChain += String.format("\"%s\",", name);
             }
             allChain = allChain.substring(0, allChain.length() - 1);
             return ds.getChains(allChain);
@@ -50,36 +43,39 @@ public class GroupManager {
         return Collections.emptyList();
     }
 
-    public int putChannel(String channelName, int status, String... chains) {
+    public int putChannel(String groupName, int status, String... chains) {
         int cnt = 0;
         List<Chain> allChain = getChains(chains);
-        if (channels.containsKey(channelName)) {
+        if (groups.containsKey(groupName)) {
             //add to existed channel
-            Group existedGroup = channels.get(channelName);
+            Group existedGroup = groups.get(groupName);
             if (!allChain.isEmpty()) {
-
-
                 //update cache
                 existedGroup.addMember(allChain);
                 for (Chain chain : allChain) {
-                    cnt = ds.associate(existedGroup.getChannelId(),chain.getChainId());
+                    cnt = ds.associate(existedGroup.getGroupId(), chain.getChainId());
                 }
-                log.info(Loggers.LOGFORMAT, String.format("add to channel:[%s], associated chains:[%s]", channelName, Arrays.toString(chains)));
+                log.info("add to channel:[{}], associated chains:[{}]", groupName, Arrays.toString(chains));
+                if (allChain.size() != chains.length) {
+                    log.info("add to group, but some of chains not found");
+                }
+            } else {
+                log.info("add to channel, but chains:[{}] not found", (Object) chains);
             }
         } else {
             Group group = new Group();
-            group.setChannelId(UUID.randomUUID().toString());
-            group.setChannelName(channelName);
+            group.setGroupId(UUID.randomUUID().toString());
+            group.setGroupName(groupName);
             group.setStatus(status);
 
             if (!allChain.isEmpty()) {
                 group.addMember(allChain);
             }
 
-            channels.put(group.getChannelName(), group);
+            groups.put(group.getGroupName(), group);
             cnt = ds.newGroup(group);
             ds.associate(group);
-            log.info(Loggers.LOGFORMAT, String.format("create channel:[%s], associated chains:[%s]", channelName, Arrays.toString(chains)));
+            log.info(Loggers.LOGFORMAT, String.format("create channel:[%s], associated chains:[%s]", groupName, Arrays.toString(chains)));
         }
 
         return cnt;
@@ -92,7 +88,7 @@ public class GroupManager {
         chain.setChainName(chainName);
         chain.setStatus(status);
 
-        log.info(Loggers.LOGFORMAT, "create chain:[%s]", chainName);
+        log.info("create chain:[{}]", chainName);
         return ds.addChain(chain);
     }
 
@@ -107,7 +103,7 @@ public class GroupManager {
                     break;
             }
         } catch (Exception e) {
-            log.error(Loggers.LOGFORMAT, "update [%s]", target);
+            log.error("update [{}]", target);
             return 1;
         }
         log.info(Loggers.LOGFORMAT, "update success!");
@@ -115,30 +111,30 @@ public class GroupManager {
     }
 
     public int removeTo(String srcCnlName, String desCnlName, String cName) {
-        if (Strings.isEmpty(desCnlName) && channels.containsKey(srcCnlName)) {
-            Group src_cnl = channels.get(srcCnlName);
+        if (Strings.isEmpty(desCnlName) && groups.containsKey(srcCnlName)) {
+            Group src_cnl = groups.get(srcCnlName);
             Chain srcChain = src_cnl.getChain(cName);
             if (Objects.nonNull(srcChain)) {
-                String src_cnl_id = src_cnl.getChannelId();
+                String src_cnl_id = src_cnl.getGroupId();
                 ds.deAssociate(src_cnl_id, srcChain.getChainId());
             }
-            log.info(Loggers.LOGFORMAT, "remove chain[%s] from [%s] successfully!", cName, srcCnlName);
+            log.info("remove chain[{}] from [{}] successfully!", cName, srcCnlName);
             return 0;
         }
-        if (channels.containsKey(srcCnlName) && channels.containsKey(desCnlName)) {
-            Group src_cnl = channels.get(srcCnlName);
-            Group des_cnl = channels.get(desCnlName);
+        if (groups.containsKey(srcCnlName) && groups.containsKey(desCnlName)) {
+            Group src_cnl = groups.get(srcCnlName);
+            Group des_cnl = groups.get(desCnlName);
             Chain srcChain = src_cnl.getChain(cName);
             if (Objects.nonNull(srcChain)) {
-                String src_cnl_id = src_cnl.getChannelId();
-                String des_cnl_id = des_cnl.getChannelId();
+                String src_cnl_id = src_cnl.getGroupId();
+                String des_cnl_id = des_cnl.getGroupId();
                 ds.deAssociate(src_cnl_id, srcChain.getChainId());
                 ds.associate(des_cnl_id, srcChain.getChainId());
             }
-            log.info(Loggers.LOGFORMAT, "remove chain[%s] from [%s] to [%s] successfully!", cName, srcCnlName, desCnlName);
+            log.info("remove chain[{}] from [{}] to [{}] successfully!", cName, srcCnlName, desCnlName);
             return 0;
         }
-        log.error(Loggers.LOGFORMAT, "remove chain[%s] from [%s] to [%s] failed!", cName, srcCnlName, desCnlName);
+        log.error("remove chain[{}] from [{}] to [{}] failed!", cName, srcCnlName, desCnlName);
         return 1;
     }
 }
