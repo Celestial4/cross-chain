@@ -110,11 +110,15 @@ public class GroupSource {
         sql.update("delete from channel_chain where channel_id=? and chain_id=?", channel_id, chain_id);
     }
 
-    public void updateChannel(String cnl_name, int status) {
+    public void updateGroup(String cnl_name, int status) {
         sql.update("update from channel set status=? where channel_name=?", status, cnl_name);
     }
 
     public void updateChain(String c_name, int status) {
         sql.update("update from chain set status=? where chain_name=?", status, c_name);
+    }
+
+    public Chain getChain(String cName) {
+        return sql.queryForObject("select * from chain where chain_name=?", Mappers.chainRowMapper, cName);
     }
 }

@@ -38,16 +38,17 @@ public class ServerFace {
         src.setChainName("local");
         src.setContract(requestEntity.getSrcContract());
         src.setFunction(requestEntity.getSrcFunction());
+        src.setArgs(requestEntity.getSrcArgs().replaceAll(",", "\r\n"));
 
         CommonCrossChainRequest des = new CommonCrossChainRequest();
         des.setChainName(requestEntity.getDesChain());
         des.setContract(requestEntity.getDesContract());
         des.setFunction(requestEntity.getDesFunction());
-        des.setArgs(requestEntity.getArgs().replaceAll(",", "\r\n"));
+        des.setArgs(requestEntity.getDesArgs().replaceAll(",", "\r\n"));
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src,des, requestEntity.getGroup());
-        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}",des.getChainName(),des.getContract(),des.getFunction(),requestEntity.getArgs(),src.getChainName(),src.getContract(),src.getFunction());
+        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}",des.getChainName(),des.getContract(),des.getFunction(),requestEntity.getDesArgs(),src.getChainName(),src.getContract(),src.getFunction());
         ResponseEntity response;
         try {
             dispatcher = dispatcherManager.getDispatcher(requestEntity.getMode());
@@ -70,21 +71,21 @@ public class ServerFace {
         return cnt > 0 ? "successful" : "failed";
     }
 
-    @PostMapping("/add_channel")
-    public String addChannel(@Validated @RequestParam("channel_name") String channelName,
-                             @RequestParam(value = "channel_status", defaultValue = "0") int status,
+    @PostMapping("/add_group")
+    public String addChannel(@Validated @RequestParam("group_name") String groupName,
+                             @RequestParam(value = "group_status", defaultValue = "0") int status,
                              @RequestParam(value = "chains", defaultValue = "") String chains) {
         String[] split = null;
         if (Strings.isNotEmpty(chains)) {
             split = chains.split(",");
         }
-        int cnt = groupManager.putChannel(channelName, status, split);
+        int cnt = groupManager.putGroup(groupName, status, split);
         return cnt > 0 ? "successful" : "failed";
     }
 
     @PostMapping("/move")
-    public String move(@RequestParam("src_channel_n") String sr_cnl_n,
-                       @RequestParam(value = "des_channel_n", defaultValue = "") String des_cnl_n,
+    public String move(@RequestParam("src_group_n") String sr_cnl_n,
+                       @RequestParam(value = "des_group_n", defaultValue = "") String des_cnl_n,
                        @RequestParam("chain_n") String chain_n) {
         int res_code = 1;
         if (Strings.isEmpty(des_cnl_n)) {

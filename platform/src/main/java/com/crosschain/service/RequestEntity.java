@@ -8,10 +8,11 @@ public class RequestEntity {
     String desChain;
     String desContract;
     String desFunction;
-    String args="";
+    String desArgs ="";
 
     String srcContract;
     String srcFunction;
+    String srcArgs ="";
     String mode="default";
     String userName;
     String userToken;

@@ -45,7 +45,7 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
 
     @Override
     public ResponseEntity process(CrossChainRequest request) throws Exception {
-        Group group = groupManager.getChannel(request.getGroup());
+        Group group = groupManager.getGroup(request.getGroup());
         log.debug("[current group info]: {}", group.toString());
         if (group.getStatus() == 0) {
             log.info("[group info]: {},{}", group.getGroupName(), group.getStatus() == 0 ? "active" : "unavailable");
@@ -54,7 +54,10 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
             CommonCrossChainResponse DesRes = processDes(request.getDesChainRequest(), group);
             response.setDesResult(DesRes.getResult());
             CommonCrossChainRequest srcChainRequest = request.getSrcChainRequest();
-            srcChainRequest.setArgs(processResult(DesRes));
+
+            if ("".equals(srcChainRequest.getArgs())) {
+                srcChainRequest.setArgs(processResult(DesRes));
+            }
 
             CommonCrossChainResponse srcRes = processSrc(srcChainRequest, group);
             response.setSrcResult(srcRes.getResult());
