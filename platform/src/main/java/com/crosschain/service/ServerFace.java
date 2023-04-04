@@ -1,10 +1,10 @@
 package com.crosschain.service;
 
-import com.crosschain.auth.AuthManager;
 import com.crosschain.common.CommonCrossChainRequest;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
+import com.crosschain.filter.RequestFilter;
 import com.crosschain.group.GroupManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -24,15 +24,12 @@ public class ServerFace {
     private GroupManager groupManager;
 
     @Resource
-    private AuthManager authManager;
+    private RequestFilter filter;
 
 
     @PostMapping("/crosschain")
     @ResponseBody
     public String resolve(@RequestBody RequestEntity requestEntity) {
-        if (!authManager.authForUser(requestEntity.getUserName(), requestEntity.getUserToken())) {
-            return new ResponseEntity("authentication failed!").getErrorMsg();
-        }
 
         CommonCrossChainRequest src = new CommonCrossChainRequest();
         src.setChainName("local");
@@ -51,6 +48,7 @@ public class ServerFace {
         log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}",des.getChainName(),des.getContract(),des.getFunction(),requestEntity.getDesArgs(),src.getChainName(),src.getContract(),src.getFunction());
         ResponseEntity response;
         try {
+            filter.doFilter(requestEntity);
             dispatcher = dispatcherManager.getDispatcher(requestEntity.getMode());
             log.debug("[acquired crosschain dispatcher]: {}",dispatcher.getClass());
             response = dispatcher.process(req);
