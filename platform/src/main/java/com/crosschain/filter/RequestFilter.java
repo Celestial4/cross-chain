@@ -6,6 +6,10 @@ import com.crosschain.service.RequestEntity;
 
 public class RequestFilter {
 
+    public void setAuthManager(AuthManager authManager) {
+        this.authManager = authManager;
+    }
+
     private AuthManager authManager;
 
     public void doFilter(RequestEntity requestEntity) throws Exception{
