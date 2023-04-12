@@ -30,27 +30,20 @@ public class ServerFace {
     @PostMapping("/crosschain")
     @ResponseBody
     public String resolve(@RequestBody RequestEntity requestEntity) {
-
         CommonCrossChainRequest src = new CommonCrossChainRequest();
-        src.setChainName("local");
-        src.setContract(requestEntity.getSrcContract());
-        src.setFunction(requestEntity.getSrcFunction());
-        src.setArgs(requestEntity.getSrcArgs().replaceAll(",", "\r\n"));
 
         CommonCrossChainRequest des = new CommonCrossChainRequest();
-        des.setChainName(requestEntity.getDesChain());
-        des.setContract(requestEntity.getDesContract());
-        des.setFunction(requestEntity.getDesFunction());
-        des.setArgs(requestEntity.getDesArgs().replaceAll(",", "\r\n"));
+
+        setRequest(requestEntity, src, des);
 
         Dispatcher dispatcher;
-        CrossChainRequest req = new CrossChainRequest(src,des, requestEntity.getGroup());
-        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}",des.getChainName(),des.getContract(),des.getFunction(),requestEntity.getDesArgs(),src.getChainName(),src.getContract(),src.getFunction());
+        CrossChainRequest req = new CrossChainRequest(src, des, requestEntity.getGroup());
+        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}", des.getChainName(), des.getContract(), des.getFunction(), requestEntity.getDesArgs(), src.getChainName(), src.getContract(), src.getFunction());
         ResponseEntity response;
         try {
             filter.doFilter(requestEntity);
             dispatcher = dispatcherManager.getDispatcher(requestEntity.getMode());
-            log.debug("[acquired crosschain dispatcher]: {}",dispatcher.getClass());
+            log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
             log.error(e.getStackTrace().toString());
@@ -59,7 +52,57 @@ public class ServerFace {
         if (!response.getErrorMsg().equals("")) {
             return response.getErrorMsg();
         }
-        return String.format("[desChainResult]:---\n%s\n[srcChainResult]:---\n%s\n",response.getDesResult(),response.getSrcResult());
+        return String.format("[desChainResult]:---\n%s\n[srcChainResult]:---\n%s\n", response.getDesResult(), response.getSrcResult());
+    }
+
+    @PostMapping("/transaction_lock")
+    public String transaction_lock(@RequestBody RequestEntity requestEntity) {
+        requestEntity.setMode("lock");
+        CommonCrossChainRequest src = new CommonCrossChainRequest();
+        CommonCrossChainRequest des = new CommonCrossChainRequest();
+        setRequest(requestEntity, src, des);
+
+        Dispatcher dispatcher;
+        CrossChainRequest req = new CrossChainRequest(src, des, requestEntity.getGroup());
+        ResponseEntity response;
+        try {
+            filter.doFilter(requestEntity);
+            dispatcher = dispatcherManager.getDispatcher(requestEntity.getMode());
+            log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
+            response = dispatcher.process(req);
+        } catch (Exception e) {
+            log.error(e.getStackTrace().toString());
+            response = new ResponseEntity(e.getMessage());
+        }
+        if (!response.getErrorMsg().equals("")) {
+            return response.getErrorMsg();
+        }
+        return String.format("[desChainResult]:---\n%s\n[srcChainResult]:---\n%s\n", response.getDesResult(), response.getSrcResult());
+    }
+
+    @PostMapping("/transaction_unlock")
+    public String transaction_unlock(@RequestBody RequestEntity requestEntity) {
+        requestEntity.setMode("unlock");
+        CommonCrossChainRequest src = new CommonCrossChainRequest();
+        CommonCrossChainRequest des = new CommonCrossChainRequest();
+        setRequest(requestEntity, src, des);
+
+        Dispatcher dispatcher;
+        CrossChainRequest req = new CrossChainRequest(src, des, requestEntity.getGroup());
+        ResponseEntity response;
+        try {
+            filter.doFilter(requestEntity);
+            dispatcher = dispatcherManager.getDispatcher(requestEntity.getMode());
+            log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
+            response = dispatcher.process(req);
+        } catch (Exception e) {
+            log.error(e.getStackTrace().toString());
+            response = new ResponseEntity(e.getMessage());
+        }
+        if (!response.getErrorMsg().equals("")) {
+            return response.getErrorMsg();
+        }
+        return String.format("[desChainResult]:---\n%s\n[srcChainResult]:---\n%s\n", response.getDesResult(), response.getSrcResult());
     }
 
     @PostMapping("/add_chain")
@@ -89,7 +132,7 @@ public class ServerFace {
         if (Strings.isEmpty(des_cnl_n)) {
             res_code = groupManager.removeTo(sr_cnl_n, null, chain_n);
         } else {
-            res_code= groupManager.removeTo(sr_cnl_n, des_cnl_n, chain_n);
+            res_code = groupManager.removeTo(sr_cnl_n, des_cnl_n, chain_n);
         }
         return res_code == 1 ? "operation failed" : "operation success";
     }
@@ -102,4 +145,16 @@ public class ServerFace {
         return res_code == 1 ? "operation failed" : "operation success";
     }
 
+
+    private void setRequest(RequestEntity requestEntity, CommonCrossChainRequest src, CommonCrossChainRequest des) {
+        src.setChainName("local");
+        src.setContract(requestEntity.getSrcContract());
+        src.setFunction(requestEntity.getSrcFunction());
+        src.setArgs(requestEntity.getSrcArgs().replaceAll(",", "\r\n"));
+
+        des.setChainName(requestEntity.getDesChain());
+        des.setContract(requestEntity.getDesContract());
+        des.setFunction(requestEntity.getDesFunction());
+        des.setArgs(requestEntity.getDesArgs().replaceAll(",", "\r\n"));
+    }
 }
