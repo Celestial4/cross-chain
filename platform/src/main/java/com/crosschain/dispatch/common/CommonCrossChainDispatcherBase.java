@@ -1,7 +1,10 @@
 package com.crosschain.dispatch.common;
 
-import com.crosschain.audit.IAuditEntity;
-import com.crosschain.common.*;
+import com.crosschain.audit.AuditManager;
+import com.crosschain.common.CommonCrossChainRequest;
+import com.crosschain.common.CommonCrossChainResponse;
+import com.crosschain.common.Group;
+import com.crosschain.common.SystemInfo;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.group.GroupManager;
@@ -15,7 +18,7 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
         this.groupManager = groupManager;
     }
 
-    private GroupManager groupManager;
+    protected GroupManager groupManager;
 
     public void setSystemInfo(SystemInfo systemInfo) {
         this.systemInfo = systemInfo;
@@ -23,13 +26,19 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
 
     protected SystemInfo systemInfo;
 
+    public void setAuditManager(AuditManager auditManager) {
+        this.auditManager = auditManager;
+    }
+
+    protected AuditManager auditManager;
+
     abstract CommonCrossChainResponse processDes(CommonCrossChainRequest req, Group group) throws Exception;
 
     abstract CommonCrossChainResponse processSrc(CommonCrossChainRequest req, Group group) throws Exception;
 
     abstract String processResult(CommonCrossChainResponse rep);
 
-    abstract void processAudit(IAuditEntity entity);
+    abstract void processAudit(CrossChainRequest req,String msgRtd) throws Exception;
 
     private void setLocalChain(CrossChainRequest req) {
         CommonCrossChainRequest src = req.getSrcChainRequest();
@@ -52,6 +61,7 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
             ResponseEntity response = new ResponseEntity();
             setLocalChain(request);
             CommonCrossChainResponse DesRes = processDes(request.getDesChainRequest(), group);
+
             response.setDesResult(DesRes.getResult());
             CommonCrossChainRequest srcChainRequest = request.getSrcChainRequest();
 
@@ -60,14 +70,12 @@ public abstract class CommonCrossChainDispatcherBase implements Dispatcher {
             }
 
             CommonCrossChainResponse srcRes = processSrc(srcChainRequest, group);
+            //源链执行后上报数据
+            processAudit(request, srcRes.getResult());
             response.setSrcResult(srcRes.getResult());
-            //todo 处理存证，由DesRes得到auditEntity,并在子类中实现相应的存证逻辑
-            IAuditEntity auditEntity = null;
-            processAudit(auditEntity);
 
             return response;
         } else {
-            //todo 失败请求的后续处理
             return new ResponseEntity("跨链请求失败，跨链群组当前不可用");
         }
     }

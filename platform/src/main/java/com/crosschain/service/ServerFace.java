@@ -1,5 +1,6 @@
 package com.crosschain.service;
 
+import com.crosschain.audit.AuditManager;
 import com.crosschain.common.CommonCrossChainRequest;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
@@ -8,7 +9,6 @@ import com.crosschain.filter.RequestFilter;
 import com.crosschain.group.GroupManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -24,6 +24,9 @@ public class ServerFace {
     private GroupManager groupManager;
 
     @Resource
+    private AuditManager auditManager;
+
+    @Resource
     private RequestFilter filter;
 
 
@@ -35,6 +38,7 @@ public class ServerFace {
         CommonCrossChainRequest des = new CommonCrossChainRequest();
 
         setRequest(requestEntity, src, des);
+        auditManager.setRequest(requestEntity);
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src, des, requestEntity.getGroup());
@@ -46,7 +50,7 @@ public class ServerFace {
             log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
-            log.error(e.getStackTrace().toString());
+            log.error(e.getMessage());
             response = new ResponseEntity(e.getMessage());
         }
         if (!response.getErrorMsg().equals("")) {
@@ -71,7 +75,7 @@ public class ServerFace {
             log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
-            log.error(e.getStackTrace().toString());
+            log.error(e.getMessage());
             response = new ResponseEntity(e.getMessage());
         }
         if (!response.getErrorMsg().equals("")) {
@@ -96,7 +100,7 @@ public class ServerFace {
             log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
-            log.error(e.getStackTrace().toString());
+            log.error(e.getMessage());
             response = new ResponseEntity(e.getMessage());
         }
         if (!response.getErrorMsg().equals("")) {
@@ -106,14 +110,14 @@ public class ServerFace {
     }
 
     @PostMapping("/add_chain")
-    public String addChain(@Validated @RequestParam("chain_name") String chainName,
+    public String addChain(@RequestParam("chain_name") String chainName,
                            @RequestParam(value = "chain_status", defaultValue = "0") int status) {
         int cnt = groupManager.putChain(chainName, status);
         return cnt > 0 ? "successful" : "failed";
     }
 
     @PostMapping("/add_group")
-    public String addChannel(@Validated @RequestParam("group_name") String groupName,
+    public String addChannel(@RequestParam("group_name") String groupName,
                              @RequestParam(value = "group_status", defaultValue = "0") int status,
                              @RequestParam(value = "chains", defaultValue = "") String chains) {
         String[] split = null;

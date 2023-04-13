@@ -1,5 +1,6 @@
 package com.crosschain.dispatch.common;
 
+import com.crosschain.audit.AuditManager;
 import com.crosschain.common.SystemInfo;
 import com.crosschain.group.GroupManager;
 import org.springframework.context.annotation.Bean;
@@ -16,11 +17,15 @@ public class CrossChainDispatcherConfig {
     @Resource
     private SystemInfo systemInfo;
 
+    @Resource
+    private AuditManager auditManager;
+
     @Bean
     public CommonCrossChainDispatcherBase defaultDispatcher(){
         CommonCrossChainDispatcherBase dispatcher = new DefaultCommonCrossChainDispatcher();
         dispatcher.setGroupManager(groupManager);
         dispatcher.setSystemInfo(systemInfo);
+        dispatcher.setAuditManager(auditManager);
         return dispatcher;
     }
 
