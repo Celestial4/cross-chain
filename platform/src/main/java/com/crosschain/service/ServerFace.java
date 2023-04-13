@@ -60,6 +60,7 @@ public class ServerFace {
     }
 
     @PostMapping("/transaction_lock")
+    @ResponseBody
     public String transaction_lock(@RequestBody RequestEntity requestEntity) {
         requestEntity.setMode("lock");
         CommonCrossChainRequest src = new CommonCrossChainRequest();
@@ -85,6 +86,7 @@ public class ServerFace {
     }
 
     @PostMapping("/transaction_unlock")
+    @ResponseBody
     public String transaction_unlock(@RequestBody RequestEntity requestEntity) {
         requestEntity.setMode("unlock");
         CommonCrossChainRequest src = new CommonCrossChainRequest();
