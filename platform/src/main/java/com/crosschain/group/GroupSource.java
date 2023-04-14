@@ -27,7 +27,6 @@ public class GroupSource {
             throw new Exception("跨链群组不存在");
         }
         c.addMember(getRelatedChains(channelName));
-        logger.debug("[get group]: {},{}", c.getGroupName(), c.getMembers());
         return c;
     }
 

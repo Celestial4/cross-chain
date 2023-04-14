@@ -40,15 +40,17 @@ public class AuditManager {
         // 上报
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             //todo 填写上传接口
-            ClassicHttpRequest post = ClassicRequestBuilder.post("10.186.77.122:10010/transaction/createTransaction").addHeader("Content-Type", "application/json").setEntity(payload.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON).build();
+            ClassicHttpRequest post = ClassicRequestBuilder.post("http://10.186.77.122:10010/transaction/createTransaction").addHeader("Content-Type", "application/json").setEntity(payload.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON).build();
             client.execute(post,(r)->{
                 //receive from thgy
                 System.out.println(r);
                 return null;
             });
+            log.info("upload audition info:{}",payload);
 
         } catch (IOException e) {
             log.error("[upload audition info failed]:{}",e.getMessage());
+            throw e;
         }
     }
 }
