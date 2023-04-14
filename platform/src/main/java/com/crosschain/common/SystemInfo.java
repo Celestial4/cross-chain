@@ -1,5 +1,7 @@
 package com.crosschain.common;
 
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,9 @@ public class SystemInfo {
     public void init() {
         try {
             Properties pros = new Properties();
-            InputStream is = getClass().getClassLoader().getResourceAsStream("config.properties");
+            PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
+            InputStream is = pathMatchingResourcePatternResolver.getResource("file:conf/config.properties").getInputStream();
+            //InputStream is = new ClassPathResource("config.properties").getInputStream();
             pros.load(is);
             Set<Map.Entry<Object, Object>> entries = pros.entrySet();
             for (Map.Entry<Object, Object> entry : entries) {
