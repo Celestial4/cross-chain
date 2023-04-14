@@ -111,11 +111,11 @@ public class GroupSource {
     }
 
     public void updateGroup(String cnl_name, int status) {
-        sql.update("update from channel set status=? where channel_name=?", status, cnl_name);
+        sql.update("update channel set channel_status=? where channel_name=?", status, cnl_name);
     }
 
     public void updateChain(String c_name, int status) {
-        sql.update("update from chain set status=? where chain_name=?", status, c_name);
+        sql.update("update chain set chain_status=? where chain_name=?", status, c_name);
     }
 
     public Chain getChain(String cName) {

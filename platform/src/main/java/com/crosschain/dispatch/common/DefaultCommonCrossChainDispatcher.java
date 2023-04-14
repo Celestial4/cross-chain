@@ -68,9 +68,13 @@ public class DefaultCommonCrossChainDispatcher extends CommonCrossChainDispatche
 
     @Override
     void processAudit(CrossChainRequest req, String msgRtd) throws Exception {
+        if (!req.getSrcChainRequest().getChainName().equals("hyperchain")) {
+            return;
+        }
+
         String proof, timestamp, action, status;
 
-        Pattern p = Pattern.compile("[\\w\\s\":,]*(?<=hash\":\")(\\w+)[\\w\\s\":,]*(?<=time\":\")(\\w+)[\\w\\s\":,]*(?<=action\":)(\\w+)[\\w\\s\":,]*(?<=status\":)(\\w+)");
+        Pattern p = Pattern.compile("[\\w\\s\":.,]*(?<=hash\":\")(\\w+)[\\w\\s\":.,]*(?<=time\":\")(\\w+)[\\w\\s\":.,]*(?<=action\":)(\\w+)[\\w\\s\":.,]*(?<=status\":)(\\w+)");
         Matcher m = p.matcher(msgRtd);
         if (m.find()) {
             proof = m.group(1);

@@ -103,7 +103,7 @@ public class GroupManager {
                     break;
             }
         } catch (Exception e) {
-            log.error("update [{}]", target);
+            log.error("update {} failed; info:{}", target,e.getMessage());
             return 1;
         }
         log.info(Loggers.LOGFORMAT, "update success!");
