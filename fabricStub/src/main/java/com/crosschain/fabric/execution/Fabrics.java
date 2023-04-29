@@ -5,8 +5,10 @@ import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.identity.*;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +30,9 @@ public class Fabrics {
 
     public void init(){
         try {
-            pros.load(getClass().getClassLoader().getResourceAsStream("fabric.config"));
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            pros.load(resolver.getResource("file:conf/fabric.config").getInputStream());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
