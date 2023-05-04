@@ -1,4 +1,4 @@
-package com.crosschain.dispatch.transaction;
+package com.crosschain.dispatch.transaction.duel;
 
 import com.crosschain.common.CommonCrossChainRequest;
 import com.crosschain.common.Group;
@@ -15,10 +15,11 @@ public class LockDispatcher extends TransactionBase {
     private long src_deadline = 0L;
 
     @Override
-    String doDes(CrossChainRequest request, Group grp) throws Exception {
+    protected String doDes(CrossChainRequest request, Group grp) throws Exception {
         CommonCrossChainRequest req = request.getDesChainRequest();
-        check(grp, req);
-        Pattern p = Pattern.compile("(\\w+,){4}(\\d+$)");
+        checkAvailable(grp, req);
+
+        Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
         String origin = req.getArgs();
         Matcher m = p.matcher(origin);
         if (m.find()) {
@@ -29,15 +30,17 @@ public class LockDispatcher extends TransactionBase {
         }
         req.setArgs(origin);
         String socAddress = systemInfo.getServiceAddr(req.getChainName());
+
         //call des
         return lock_part(socAddress, req);
     }
 
     @Override
-    String doSrc(CrossChainRequest request, Group grp) throws Exception {
+    protected String doSrc(CrossChainRequest request, Group grp) throws Exception {
         CommonCrossChainRequest req = request.getSrcChainRequest();
-        check(grp, req);
-        Pattern p = Pattern.compile("(\\w+,){4}(\\d+$)");
+        checkAvailable(grp, req);
+
+        Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
         Matcher m = p.matcher(req.getArgs());
         if (m.find()) {
             src_deadline = Long.parseLong(m.group(5));
@@ -45,15 +48,16 @@ public class LockDispatcher extends TransactionBase {
             throw new Exception("哈希时间锁参数设置错误");
         }
         String socAddress2 = systemInfo.getServiceAddr(req.getChainName());
+
         return lock_part(socAddress2, req);
     }
 
     private String lock_part(String socAddress, CommonCrossChainRequest req) throws Exception {
         String[] socketInfo = socAddress.split(":");
         log.info("[src chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
+
         byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
-
         log.debug("received from blockchain:{}", res);
 
         String REGEX = "addr:(\\w*)";
@@ -62,6 +66,7 @@ public class LockDispatcher extends TransactionBase {
         if (matcher.find()) {
             return matcher.group(1);
         }
+
         throw new Exception(req.getChainName() + "锁定失败");
     }
 }

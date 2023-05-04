@@ -19,7 +19,6 @@ public class SystemInfo {
             Properties pros = new Properties();
             PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
             InputStream is = pathMatchingResourcePatternResolver.getResource("file:conf/config.properties").getInputStream();
-            //InputStream is = new ClassPathResource("config.properties").getInputStream();
             pros.load(is);
             Set<Map.Entry<Object, Object>> entries = pros.entrySet();
             for (Map.Entry<Object, Object> entry : entries) {

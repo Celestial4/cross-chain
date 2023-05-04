@@ -42,5 +42,4 @@ public class TransactionAudit implements IAuditEntity{
     public String auditInfo() {
         return JSON.toJSONString(this);
     }
-
 }

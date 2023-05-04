@@ -1,4 +1,4 @@
-package com.crosschain.dispatch.transaction;
+package com.crosschain.dispatch.transaction.duel;
 
 import com.crosschain.common.CommonCrossChainRequest;
 import com.crosschain.common.Group;
@@ -12,21 +12,22 @@ import java.util.regex.Pattern;
 
 @Slf4j
 public class UnlockDispatcher extends TransactionBase {
-    private String s;
+    private String h;
 
     @Override
-    String doDes(CrossChainRequest request, Group grp) throws Exception {
+    protected String doDes(CrossChainRequest request, Group grp) throws Exception {
         //actually do deschain
         CommonCrossChainRequest req = request.getSrcChainRequest();
-        check(grp, req);
+        checkAvailable(grp, req);
+
         String origin = req.getArgs();
-        Pattern p = Pattern.compile("(^\\w+),(\\w+$)");
+        Pattern p = Pattern.compile("(^\\w+)\r\n(\\w+$)");
         Matcher m = p.matcher(origin);
         String args = "";
         if (m.find()) {
             String first = m.group(1);
             String last = m.group(2);
-            args = first + s + "," + last;
+            args = first + h + "," + last;
         }
         req.setArgs(args);
 
@@ -37,16 +38,16 @@ public class UnlockDispatcher extends TransactionBase {
     }
 
     @Override
-    String doSrc(CrossChainRequest request, Group grp) throws Exception {
+    protected String doSrc(CrossChainRequest request, Group grp) throws Exception {
         //actually do deschain
         CommonCrossChainRequest req = request.getDesChainRequest();
-        check(grp, req);
+        checkAvailable(grp, req);
 
         String origin = req.getArgs();
-        Pattern p = Pattern.compile("(?<=\\w,)(\\w+)(?=,\\w)");
+        Pattern p = Pattern.compile("(?<=\\w\r\n)(\\w+)(?=\r\n\\w)");
         Matcher m = p.matcher(origin);
         if (m.find()) {
-            s = m.group(1);
+            h = m.group(1);
         } else {
             throw new Exception("没有哈希原像参数");
         }
@@ -70,9 +71,9 @@ public class UnlockDispatcher extends TransactionBase {
     private String unlock_part(String socAddress, CommonCrossChainRequest req) throws Exception {
         String[] socketInfo = socAddress.split(":");
         log.info("[src chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
+
         byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
-
         log.debug("received from blockchain:{}", res);
 
         String REGEX = "success";
@@ -81,6 +82,7 @@ public class UnlockDispatcher extends TransactionBase {
         if (matcher.find()) {
             return matcher.group(1);
         }
+
         throw new Exception(req.getChainName() + "解锁失败");
     }
 }
