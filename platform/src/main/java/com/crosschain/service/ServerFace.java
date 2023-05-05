@@ -34,6 +34,7 @@ public class ServerFace {
     @Resource
     private RequestFilter filter;
 
+    Response response;
 
     @PostMapping("/crosschain")
     @ResponseBody
@@ -48,7 +49,7 @@ public class ServerFace {
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
         log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}", des.getChainName(), des.getContract(), des.getFunction(), crossChainVo.getDesArgs(), src.getChainName(), src.getContract(), src.getFunction());
-        Response response;
+
         try {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
@@ -95,7 +96,7 @@ public class ServerFace {
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
-        Response response;
+
         try {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
@@ -119,7 +120,7 @@ public class ServerFace {
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
-        Response response;
+
         try {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
@@ -156,7 +157,7 @@ public class ServerFace {
     public String move(@RequestParam("src_group_n") String sr_cnl_n,
                        @RequestParam(value = "des_group_n", defaultValue = "") String des_cnl_n,
                        @RequestParam("chain_n") String chain_n) {
-        int res_code = 1;
+        int res_code;
         if (Strings.isEmpty(des_cnl_n)) {
             res_code = groupManager.removeTo(sr_cnl_n, null, chain_n);
         } else {

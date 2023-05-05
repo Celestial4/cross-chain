@@ -113,8 +113,8 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
             Pattern p = Pattern.compile("(\\w+)(\\s+)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
             Matcher m = p.matcher(srcChainRequest.getArgs());
-            String sender = null;
-            String h = null;
+            String sender;
+            String h;
             if (m.find()) {
                 sender = m.group(1);
                 h = m.group(4);
