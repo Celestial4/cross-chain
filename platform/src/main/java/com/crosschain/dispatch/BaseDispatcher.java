@@ -51,7 +51,7 @@ public abstract class BaseDispatcher implements Dispatcher {
 
     //判断链调用结果是否成功或者失败，1成功，2失败
     protected boolean continueOrNot(CommonCrossChainResponse rep) throws Exception{
-        Pattern p = Pattern.compile("[\\w\\s\":.,]*(?<=status\":\")(\\w+)");
+        Pattern p = Pattern.compile("(?<=status\":\\s?\"?)(\\w+)");
         Matcher m = p.matcher(rep.getResult());
         if (m.find()) {
             return m.group(1).equals("1");

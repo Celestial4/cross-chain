@@ -52,7 +52,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         String proof, timestamp, action, status;
 
-        Pattern p = Pattern.compile("[\\w\\s\":.,]*(?<=hash\":\")(\\w+)[\\w\\s\":.,]*(?<=time\":\")(\\w+)[\\w\\s\":.,]*(?<=action\":)(\\w+)[\\w\\s\":.,]*(?<=status\":)(\\w+)");
+        Pattern p = Pattern.compile("(?<=hash\":\\s?\"?)(\\w+)[\\w\\s\":.,]*(?<=time\":\\s?\"?)(\\w+)[\\w\\s\":.,]*(?<=action\":\\s?\"?)(\\w+)[\\w\\s\":.,]*(?<=status\":\\s?\"?)(\\w+)");
         Matcher m = p.matcher(msgRtd);
         if (m.find()) {
             proof = m.group(1);
@@ -116,7 +116,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
                 throw new Exception("源链资产锁定失败");
             }
 
-            Pattern p = Pattern.compile("(\\w+)(\\r\\n)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
+            Pattern p = Pattern.compile("(\\w+)(\\s+)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
             Matcher m = p.matcher(srcChainRequest.getArgs());
             String sender = null;
             String h = null;
@@ -135,11 +135,12 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             res_flag = continueOrNot(DesRes);
             if (res_flag) {
                 //unlock
-                p = Pattern.compile("[\\w\\s\":.,]*(?<=addr\":\")(\\w+)");
+                p = Pattern.compile("(?<=addr\"?:\\s?\"?)(\\w+)");
                 m = p.matcher(srcRes.getResult());
                 if (m.find()) {
                     String lock_addr = m.group(1);
-                    String unlock_args = sender + "\r\n" + h + "\r\n" + lock_addr;
+                    current_time = System.currentTimeMillis()/1000;
+                    String unlock_args = sender + "\r\n" + h + "\r\n" + lock_addr + "\r\n" + current_time;
                     srcChainRequest.setFunction("unlock");
                     srcChainRequest.setArgs(unlock_args);
                     srcRes = processSrc(srcChainRequest, group);
