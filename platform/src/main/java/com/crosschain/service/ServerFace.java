@@ -72,7 +72,7 @@ public class ServerFace {
         crossChainRequest.setChainName(SystemInfo.getSelfChainName());
         crossChainRequest.setContract(vo.getContract());
         crossChainRequest.setFunction(vo.getFunction());
-        crossChainRequest.setArgs(vo.getArgs());
+        crossChainRequest.setArgs(vo.getArgs().replaceAll(",","\r\n"));
 
         try {
             dispatcher = dispatcherManager.getDispatcher(vo.getMode());

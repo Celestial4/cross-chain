@@ -44,24 +44,13 @@ public class BaseDispatcher implements Dispatcher {
         }
     }
 
-    //判断链调用结果是否成功或者失败，1成功，2失败
-    protected boolean continueOrNot(CommonChainResponse rep) throws Exception {
-        Pattern p = Pattern.compile("(?<=status\":\\s?\"?)(\\w+)");
-        Matcher m = p.matcher(rep.getResult());
-        if (m.find()) {
-            return m.group(1).equals("1");
-        } else {
-            throw new Exception("无法判断合约执行情况，合约结果中未找到status字段");
-        }
-    }
-
     protected String extractInfo(String field, String source) throws Exception {
         Pattern p = Pattern.compile(String.format("(?<=%s\"?:\\s?\"?)(\\w+)", field));
         Matcher m = p.matcher(source);
         if (m.find()) {
             return m.group();
         } else {
-            throw new Exception("合约返回值中没有找到" + field + "字段");
+            throw new Exception("合约返回值中不能解析出" + field + "字段");
         }
     }
 

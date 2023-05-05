@@ -106,7 +106,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             //源链锁资产
             CommonChainResponse srcRes = processSrc(srcChainRequest, group);
             response.setSrcResult("lock:\n" + srcRes.getResult() + "\n");
-            boolean res_flag = continueOrNot(srcRes);
+            boolean res_flag = extractInfo("status",srcRes.getResult()).equals("1");
             if (!res_flag) {
                 throw new Exception("源链资产锁定失败");
             }
@@ -127,7 +127,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             response.setDesResult(DesRes.getResult());
 
             //目标链执行成功
-            res_flag = continueOrNot(DesRes);
+            res_flag = extractInfo("status",DesRes.getResult()).equals("1");
             if (res_flag) {
                 //unlock
                 String lock_addr = extractInfo("addr", srcRes.getResult());
