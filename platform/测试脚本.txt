@@ -1,0 +1,15 @@
+测试示例
+hyperchain->fabric:
+
+curl localhost:3004/crosschain -H "Content-Type:application/json" -d '{"mode": "single","group": "test","desChain": "fabric","desContract": "CrossChain","desFunction": "show","desArgs": "","srcContract": "AssetTransfer","srcFunction": "lock","srcArgs": "jack,jack1,qwer,3,1000","userName": "test","userToken": "test"}'
+
+curl localhost:3004/selfcall -H "Content-Type:application/json" -d '{"contract": "AssetTransfer","function": "show","args": ""}'|jq
+curl localhost:3004/selfcall -H "Content-Type:application/json" -d '{"contract": "AssetTransfer","function": "lock","args": "jack,jack1,qwert,5,1000"}'|jq
+curl localhost:3004/selfcall -H "Content-Type:application/json" -d '{"contract": "AssetTransfer","function": "unlock","args": "jack,qwert,ZN6piJa7sU4t4mNl9r4wBgyOxMcnsYDM8TrI7kxV"}'|jq
+
+
+fabric->hyperchain
+
+curl localhost:3001/crosschain -H "Content-Type:application/json" -d '{"mode": "single","group": "test","desChain": "hyperchain","desContract": "AssetTransfer","desFunction": "show","desArgs": "","srcContract": "CrossChain","srcFunction": "lock","srcArgs": "jack,jack1,qwer,100,1000","userName": "test","userToken": "test"}'
+
+curl localhost:3001/selfcall -H "Content-Type:application/json" -d '{"contract": "CrossChain","function": "show","args": ""}'|jq
