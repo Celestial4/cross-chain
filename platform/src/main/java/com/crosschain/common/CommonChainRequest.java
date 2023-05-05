@@ -3,7 +3,7 @@ package com.crosschain.common;
 import lombok.Data;
 
 @Data
-public class CommonCrossChainRequest {
+public class CommonChainRequest {
 
     private String chainName;
     private String contract;

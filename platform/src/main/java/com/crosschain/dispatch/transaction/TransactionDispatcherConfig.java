@@ -1,7 +1,6 @@
 package com.crosschain.dispatch.transaction;
 
 import com.crosschain.audit.AuditManager;
-import com.crosschain.common.SystemInfo;
 import com.crosschain.dispatch.transaction.duel.LockDispatcher;
 import com.crosschain.dispatch.transaction.duel.UnlockDispatcher;
 import com.crosschain.dispatch.transaction.single.SingleTransactionCrossChainDispatcher;
@@ -18,16 +17,12 @@ public class TransactionDispatcherConfig {
     private GroupManager groupManager;
 
     @Resource
-    private SystemInfo systemInfo;
-
-    @Resource
     private AuditManager auditManager;
 
     @Bean
     public LockDispatcher lockDispatcher() {
         LockDispatcher lockDispatcher = new LockDispatcher();
         lockDispatcher.setGroupManager(groupManager);
-        lockDispatcher.setSystemInfo(systemInfo);
         return lockDispatcher;
     }
 
@@ -35,7 +30,6 @@ public class TransactionDispatcherConfig {
     public UnlockDispatcher unlockDispatcher() {
         UnlockDispatcher lockDispatcher = new UnlockDispatcher();
         lockDispatcher.setGroupManager(groupManager);
-        lockDispatcher.setSystemInfo(systemInfo);
         return lockDispatcher;
     }
 
@@ -44,7 +38,6 @@ public class TransactionDispatcherConfig {
     public SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher(){
         SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher = new SingleTransactionCrossChainDispatcher();
         singleTransactionCrossChainDispatcher.setGroupManager(groupManager);
-        singleTransactionCrossChainDispatcher.setSystemInfo(systemInfo);
         singleTransactionCrossChainDispatcher.setAuditManager(auditManager);
         return singleTransactionCrossChainDispatcher;
     }

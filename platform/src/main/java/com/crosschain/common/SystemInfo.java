@@ -14,7 +14,38 @@ public class SystemInfo {
 
     private static String selfChainName;
 
+    private static String uploadAddr;
+
     public void init() {
+        readConnectionInfo();
+        readUpload();
+    }
+
+    public static String getServiceAddr(String chainName) {
+        return maps.get(chainName);
+    }
+
+    public static String getSelfChainName() {
+        return selfChainName;
+    }
+
+    public static String getUploadServiceAddr() {
+        return uploadAddr;
+    }
+
+    private void readUpload() {
+        try {
+            Properties pros = new Properties();
+            PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
+            InputStream is = pathMatchingResourcePatternResolver.getResource("file:conf/thgy.properties").getInputStream();
+            pros.load(is);
+            uploadAddr = pros.getProperty("ip");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void readConnectionInfo() {
         try {
             Properties pros = new Properties();
             PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
@@ -33,13 +64,5 @@ public class SystemInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public String getServiceAddr(String chainName) {
-        return maps.get(chainName);
-    }
-
-    public static String getSelfChainName() {
-        return selfChainName;
     }
 }

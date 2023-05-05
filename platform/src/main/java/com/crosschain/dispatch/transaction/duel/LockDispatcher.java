@@ -1,7 +1,8 @@
 package com.crosschain.dispatch.transaction.duel;
 
-import com.crosschain.common.CommonCrossChainRequest;
+import com.crosschain.common.CommonChainRequest;
 import com.crosschain.common.Group;
+import com.crosschain.common.SystemInfo;
 import com.crosschain.dispatch.CrossChainClient;
 import com.crosschain.dispatch.CrossChainRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ public class LockDispatcher extends TransactionBase {
 
     @Override
     protected String doDes(CrossChainRequest request, Group grp) throws Exception {
-        CommonCrossChainRequest req = request.getDesChainRequest();
+        CommonChainRequest req = request.getDesChainRequest();
         checkAvailable(grp, req);
 
         Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
@@ -29,7 +30,7 @@ public class LockDispatcher extends TransactionBase {
             origin += "\r\n" + src_deadline / 2;
         }
         req.setArgs(origin);
-        String socAddress = systemInfo.getServiceAddr(req.getChainName());
+        String socAddress = SystemInfo.getServiceAddr(req.getChainName());
 
         //call des
         return lock_part(socAddress, req);
@@ -37,7 +38,7 @@ public class LockDispatcher extends TransactionBase {
 
     @Override
     protected String doSrc(CrossChainRequest request, Group grp) throws Exception {
-        CommonCrossChainRequest req = request.getSrcChainRequest();
+        CommonChainRequest req = request.getSrcChainRequest();
         checkAvailable(grp, req);
 
         Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
@@ -47,18 +48,18 @@ public class LockDispatcher extends TransactionBase {
         } else {
             throw new Exception("哈希时间锁参数设置错误");
         }
-        String socAddress2 = systemInfo.getServiceAddr(req.getChainName());
+        String socAddress2 = SystemInfo.getServiceAddr(req.getChainName());
 
         return lock_part(socAddress2, req);
     }
 
-    private String lock_part(String socAddress, CommonCrossChainRequest req) throws Exception {
+    private String lock_part(String socAddress, CommonChainRequest req) throws Exception {
         String[] socketInfo = socAddress.split(":");
         log.info("[src chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
         byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
-        log.debug("received from blockchain:{}", res);
+        log.debug("received from blockchain:{}\n{}", req.getChainName(),res);
 
         String REGEX = "addr:(\\w*)";
         Pattern p = Pattern.compile(REGEX);

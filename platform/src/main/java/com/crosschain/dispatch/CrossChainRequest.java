@@ -1,24 +1,24 @@
 package com.crosschain.dispatch;
 
-import com.crosschain.common.CommonCrossChainRequest;
+import com.crosschain.common.CommonChainRequest;
 
 public class CrossChainRequest{
-    private CommonCrossChainRequest srcChain;
-    private CommonCrossChainRequest desChain;
+    private CommonChainRequest srcChain;
+    private CommonChainRequest desChain;
     private String group;
 
 
-    public CrossChainRequest(CommonCrossChainRequest srcChain, CommonCrossChainRequest desChain, String group) {
+    public CrossChainRequest(CommonChainRequest srcChain, CommonChainRequest desChain, String group) {
         this.srcChain = srcChain;
         this.desChain = desChain;
         this.group = group;
     }
 
-    public CommonCrossChainRequest getSrcChainRequest() {
+    public CommonChainRequest getSrcChainRequest() {
         return srcChain;
     }
 
-    public CommonCrossChainRequest getDesChainRequest() {
+    public CommonChainRequest getDesChainRequest() {
         return desChain;
     }
 

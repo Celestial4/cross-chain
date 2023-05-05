@@ -3,7 +3,7 @@ package com.crosschain.dispatch.transaction.duel;
 import com.crosschain.common.Group;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainRequest;
-import com.crosschain.service.ResponseEntity;
+import com.crosschain.service.response.CrossChainServiceResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -13,13 +13,13 @@ public abstract class TransactionBase extends BaseDispatcher {
     abstract protected String doSrc(CrossChainRequest req, Group grp) throws Exception;
 
     @Override
-    public ResponseEntity process(CrossChainRequest req) throws Exception {
+    public CrossChainServiceResponse process(CrossChainRequest req) throws Exception {
 
         Group group = groupManager.getGroup(req.getGroup());
         log.debug("[current group info]: {}", group.toString());
         if (group.getStatus() == 0) {
             log.info("[group info]: {},{}", group.getGroupName(), group.getStatus() == 0 ? "active" : "unavailable");
-            ResponseEntity response = new ResponseEntity();
+            CrossChainServiceResponse response = new CrossChainServiceResponse();
             setLocalChain(req);
 
             try {
@@ -32,8 +32,7 @@ public abstract class TransactionBase extends BaseDispatcher {
             }
             return response;
         } else {
-            //todo 失败请求的后续处理
-            return new ResponseEntity("跨链请求失败，跨链群组当前不可用");
+            throw new Exception("跨链请求失败，跨链群组当前不可用");
         }
     }
 }

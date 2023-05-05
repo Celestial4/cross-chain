@@ -1,7 +1,8 @@
 package com.crosschain.dispatch.transaction.duel;
 
-import com.crosschain.common.CommonCrossChainRequest;
+import com.crosschain.common.CommonChainRequest;
 import com.crosschain.common.Group;
+import com.crosschain.common.SystemInfo;
 import com.crosschain.dispatch.CrossChainClient;
 import com.crosschain.dispatch.CrossChainRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ public class UnlockDispatcher extends TransactionBase {
     @Override
     protected String doDes(CrossChainRequest request, Group grp) throws Exception {
         //actually do deschain
-        CommonCrossChainRequest req = request.getSrcChainRequest();
+        CommonChainRequest req = request.getSrcChainRequest();
         checkAvailable(grp, req);
 
         String origin = req.getArgs();
@@ -31,7 +32,7 @@ public class UnlockDispatcher extends TransactionBase {
         }
         req.setArgs(args);
 
-        String socketAddr = systemInfo.getServiceAddr(req.getChainName());
+        String socketAddr = SystemInfo.getServiceAddr(req.getChainName());
 
         //blockchain do unlock
         return unlock_part(socketAddr, req);
@@ -40,7 +41,7 @@ public class UnlockDispatcher extends TransactionBase {
     @Override
     protected String doSrc(CrossChainRequest request, Group grp) throws Exception {
         //actually do deschain
-        CommonCrossChainRequest req = request.getDesChainRequest();
+        CommonChainRequest req = request.getDesChainRequest();
         checkAvailable(grp, req);
 
         String origin = req.getArgs();
@@ -62,19 +63,19 @@ public class UnlockDispatcher extends TransactionBase {
         }
 
         req.setArgs(origin);
-        String socketAddr = systemInfo.getServiceAddr(req.getChainName());
+        String socketAddr = SystemInfo.getServiceAddr(req.getChainName());
 
         //blockchain do unlock
         return unlock_part(socketAddr, req);
     }
 
-    private String unlock_part(String socAddress, CommonCrossChainRequest req) throws Exception {
+    private String unlock_part(String socAddress, CommonChainRequest req) throws Exception {
         String[] socketInfo = socAddress.split(":");
         log.info("[src chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
         byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
-        log.debug("received from blockchain:{}", res);
+        log.debug("received from blockchain:{}\n{}", req.getChainName(),res);
 
         String REGEX = "success";
         Pattern p = Pattern.compile(REGEX);

@@ -5,9 +5,10 @@ import com.crosschain.common.*;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainClient;
 import com.crosschain.dispatch.CrossChainRequest;
-import com.crosschain.service.ResponseEntity;
+import com.crosschain.service.response.CrossChainServiceResponse;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Date;
@@ -17,51 +18,41 @@ import java.util.regex.Pattern;
 @Slf4j
 public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
-    CommonCrossChainResponse processDes(CommonCrossChainRequest req, Group group) throws Exception {
+    CommonChainResponse processDes(CommonChainRequest req, Group group) throws Exception {
         checkAvailable(group, req);
 
-        String socAddress = systemInfo.getServiceAddr(req.getChainName());
+        String socAddress = SystemInfo.getServiceAddr(req.getChainName());
         String[] socketInfo = socAddress.split(":");
         log.info("[dest chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
         byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
-        log.debug("received from blockchain:{}", res);
+        log.debug("received from blockchain:{}\n{}", req.getChainName(),res);
 
-        return new CommonCrossChainResponse(res);
+        return new CommonChainResponse(res);
     }
 
-    CommonCrossChainResponse processSrc(CommonCrossChainRequest req, Group group) throws Exception {
+    CommonChainResponse processSrc(CommonChainRequest req, Group group) throws Exception {
         checkAvailable(group, req);
 
-        String socAddress = systemInfo.getServiceAddr(req.getChainName());
+        String socAddress = SystemInfo.getServiceAddr(req.getChainName());
         String[] socketInfo = socAddress.split(":");
         log.info("[src chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
         byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
         String res = new String(data, StandardCharsets.UTF_8);
-        log.debug("received from blockchain:{}", res);
+        log.debug("received from blockchain:{}\n{}", req.getChainName(),res);
 
-        return new CommonCrossChainResponse(res);
+        return new CommonChainResponse(res);
     }
 
     void processAudit(CrossChainRequest req, String msgRtd) throws Exception {
-        if (!req.getSrcChainRequest().getChainName().equals("hyperchain")) {
-            return;
-        }
-
         String proof, timestamp, action, status;
 
-        Pattern p = Pattern.compile("(?<=hash\":\\s?\"?)(\\w+)[\\w\\s\":.,]*(?<=time\":\\s?\"?)(\\w+)[\\w\\s\":.,]*(?<=action\":\\s?\"?)(\\w+)[\\w\\s\":.,]*(?<=status\":\\s?\"?)(\\w+)");
-        Matcher m = p.matcher(msgRtd);
-        if (m.find()) {
-            proof = m.group(1);
-            timestamp = m.group(2);
-            action = m.group(3);
-            status = m.group(4);
-        } else {
-            throw new Exception("合约返回值中缺少事务上报数据字段");
-        }
+        proof = extractInfo("hash", msgRtd);
+        timestamp = extractInfo("time", msgRtd);
+        action = extractInfo("action", msgRtd);
+        status = extractInfo("status", msgRtd);
 
         String time = new Date(Long.parseLong(timestamp)).toString();
         String receipt = "1".equals(status) ? "成功" : "失败";
@@ -90,18 +81,22 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         TransactionAudit payload = new TransactionAudit(Integer.parseInt(action), grp_id, grp_name, gateway_id, user_name, src_contract, src_chain_id, Integer.parseInt(status), des_contract, des_chain_id, transaction_id.toString(), proof, receipt, time);
 
-        auditManager.uploadAuditInfo(payload);
+        try {
+            auditManager.uploadAuditInfo(payload);
+        } catch (IOException e) {
+            log.info("跨链成功，但事务上报出现错误：\n{}",e.getMessage());
+        }
     }
 
     @Override
-    public ResponseEntity process(CrossChainRequest request) throws Exception {
+    public CrossChainServiceResponse process(CrossChainRequest request) throws Exception {
         setLocalChain(request);
         Group group = groupManager.getGroup(request.getGroup());
         log.info("[current group info]: {}", group.toString());
-        ResponseEntity response = new ResponseEntity();
+        CrossChainServiceResponse response = new CrossChainServiceResponse();
         if (group.getStatus() == 0) {
 
-            CommonCrossChainRequest srcChainRequest = request.getSrcChainRequest();
+            CommonChainRequest srcChainRequest = request.getSrcChainRequest();
             //add current timestamp
             long current_time = System.currentTimeMillis() / 1000;
             String ori = srcChainRequest.getArgs();
@@ -109,7 +104,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             srcChainRequest.setArgs(ori);
 
             //源链锁资产
-            CommonCrossChainResponse srcRes = processSrc(srcChainRequest, group);
+            CommonChainResponse srcRes = processSrc(srcChainRequest, group);
             response.setSrcResult("lock:\n" + srcRes.getResult() + "\n");
             boolean res_flag = continueOrNot(srcRes);
             if (!res_flag) {
@@ -128,27 +123,21 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             }
 
             //do deschain
-            CommonCrossChainResponse DesRes = processDes(request.getDesChainRequest(), group);
+            CommonChainResponse DesRes = processDes(request.getDesChainRequest(), group);
             response.setDesResult(DesRes.getResult());
 
             //目标链执行成功
             res_flag = continueOrNot(DesRes);
             if (res_flag) {
                 //unlock
-                p = Pattern.compile("(?<=addr\"?:\\s?\"?)(\\w+)");
-                m = p.matcher(srcRes.getResult());
-                if (m.find()) {
-                    String lock_addr = m.group(1);
-                    current_time = System.currentTimeMillis()/1000;
-                    String unlock_args = sender + "\r\n" + h + "\r\n" + lock_addr + "\r\n" + current_time;
-                    srcChainRequest.setFunction("unlock");
-                    srcChainRequest.setArgs(unlock_args);
-                    srcRes = processSrc(srcChainRequest, group);
-                    String final_src_resp = response.getSrcResult() + "unlock:\n" + srcRes.getResult();
-                    response.setSrcResult(final_src_resp);
-                } else {
-                    throw new Exception("源链锁定合约返回结果中无锁定地址字段");
-                }
+                String lock_addr = extractInfo("addr", srcRes.getResult());
+                current_time = System.currentTimeMillis() / 1000;
+                String unlock_args = sender + "\r\n" + h + "\r\n" + lock_addr + "\r\n" + current_time;
+                srcChainRequest.setFunction("unlock");
+                srcChainRequest.setArgs(unlock_args);
+                srcRes = processSrc(srcChainRequest, group);
+                String final_src_resp = response.getSrcResult() + "unlock:\n" + srcRes.getResult();
+                response.setSrcResult(final_src_resp);
             } else {
                 //rollback
                 String rollback_args = sender + "\r\n" + h;
@@ -163,6 +152,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             if (!"rollback".equals(srcRes.getResult())) {
                 processAudit(request, srcRes.getResult());
             }
+
             return response;
         } else {
             throw new Exception("跨链请求失败，跨链群组当前不可用");

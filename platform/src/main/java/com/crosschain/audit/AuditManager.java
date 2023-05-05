@@ -1,6 +1,7 @@
 package com.crosschain.audit;
 
-import com.crosschain.service.RequestEntity;
+import com.crosschain.common.SystemInfo;
+import com.crosschain.service.request.CrossChainVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -18,17 +19,14 @@ public class AuditManager {
 
     Map<String,IAuditEntity> cache = new ConcurrentHashMap<>();
 
-    private RequestEntity request;
+    private CrossChainVo request;
 
-    public void setRequest(RequestEntity request) {
+    public void setRequest(CrossChainVo request) {
         this.request = request;
     }
 
     public String getRequestIngredient() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(request.getGroup()).append(request.getDesChain()).append(request.getDesContract()).append(request.getDesFunction()).append(request.getDesArgs()).append(request.getSrcContract()).append(request.getSrcFunction()).append(request.getSrcArgs()).append(request.getUserName());
-
-        return sb.toString();
+        return request.getGroup() + request.getDesChain() + request.getDesContract() + request.getDesFunction() + request.getDesArgs() + request.getSrcContract() + request.getSrcFunction() + request.getSrcArgs() + request.getUserName();
     }
 
     public  String getUserInfo() {
@@ -39,11 +37,10 @@ public class AuditManager {
         String payload = entity.auditInfo();
         // 上报
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            //todo 填写上传接口
-            ClassicHttpRequest post = ClassicRequestBuilder.post("http://10.186.77.122:10010/transaction/createTransaction").addHeader("Content-Type", "application/json").setEntity(payload.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON).build();
+            ClassicHttpRequest post = ClassicRequestBuilder.post(SystemInfo.getUploadServiceAddr()).addHeader("Content-Type", "application/json").setEntity(payload.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON).build();
             client.execute(post,(r)->{
                 //receive from thgy
-                System.out.println(r);
+                log.info("received from upper platform:\n{}",r);
                 return null;
             });
             log.info("upload audition info:{}",payload);

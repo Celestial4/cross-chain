@@ -3,10 +3,10 @@ package com.crosschain.common;
 import lombok.Data;
 
 @Data
-public class CommonCrossChainResponse {
+public class CommonChainResponse {
     private String result;
 
-    public CommonCrossChainResponse(String res) {
+    public CommonChainResponse(String res) {
         result = res;
     }
 }
