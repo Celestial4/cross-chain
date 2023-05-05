@@ -23,15 +23,18 @@ fi
 
 pid=$(lsof -i :"${map[$index]}" | awk 'NR==2{print $2}')
 if [ -n "$pid" ]; then
-  echo "fabric gateway is running. pid:$pid"
+  echo "${index} gateway is running. pid:$pid"
 else
-  echo "fabric gateway is not running"
-  exit 0
+  echo "${index} gateway is not running"
+  exit 1
 fi
 
 kill -9 $pid
+
 if [ $? == 0 ]; then
-  echo "kill fabric gateway successfully"
+  echo "kill ${index}-gateway successfully"
+  exit 0
 else
-  echo "something goes wrong"
+  echo "kill ${index}-gateway failed"
+  exit 1
 fi
