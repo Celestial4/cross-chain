@@ -16,4 +16,8 @@ public class AuthSource {
     public List<AuthEntity> getAllUser() {
         return sql.query("select * from user", Mappers.authEntityRowMapper);
     }
+
+    public AuthEntity getUser(String userName) {
+        return sql.queryForObject("select * from user where name=?", Mappers.authEntityRowMapper, userName);
+    }
 }

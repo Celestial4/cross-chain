@@ -22,6 +22,7 @@ public class Mappers {
 
     public static RowMapper<AuthEntity> authEntityRowMapper = (res,row)->{
         AuthEntity authEntity = new AuthEntity();
+        authEntity.setUserId(res.getString(1));
         authEntity.setUsername(res.getString(2));
         authEntity.setPasswd(res.getString(3));
         return authEntity;

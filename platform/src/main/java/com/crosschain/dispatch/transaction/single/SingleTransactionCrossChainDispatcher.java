@@ -61,14 +61,17 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         String grp_name = group.getGroupName();
         String grp_id = group.getGroupId();
         String gateway_id = "gateway-" + SystemInfo.getSelfChainName();
+
         Chain sChain = group.getChain(req.getSrcChainRequest().getChainName());
         String src_chain_id = sChain.getChainId();
         String src_contract = req.getSrcChainRequest().getContract();
+        String src_chain_name = sChain.getChainName();
 
         Chain dChain = group.getChain(req.getDesChainRequest().getChainName());
         String des_chain_id = dChain.getChainId();
         String des_contract = req.getDesChainRequest().getContract();
-        String user_name = auditManager.getUserInfo();
+        String des_chain_name = dChain.getChainName();
+
 
         String transaction_id_ingredient = auditManager.getRequestIngredient() + timestamp;
         MessageDigest digest = MessageDigest.getInstance("sha-256");
@@ -79,7 +82,17 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             transaction_id.append(String.format("%x", b));
         }
 
-        TransactionAudit payload = new TransactionAudit(Integer.parseInt(action), grp_id, grp_name, gateway_id, user_name, src_contract, src_chain_id, Integer.parseInt(status), des_contract, des_chain_id, transaction_id.toString(), proof, receipt, time);
+        String request_user_name = auditManager.getRequestUser();
+        String request_user_id = CrossChainUtils.hash(request_user_name.getBytes(StandardCharsets.UTF_8));
+        String target_user_name = auditManager.getTargetUser();
+        String target_user_id = CrossChainUtils.hash(target_user_name.getBytes(StandardCharsets.UTF_8));
+
+        String dataHash = CrossChainUtils.hash(msgRtd.getBytes(StandardCharsets.UTF_8));
+        int volume = msgRtd.getBytes(StandardCharsets.UTF_8).length/8;
+        String behaviorContent = action;
+        String behavioralResults = status;
+
+        TransactionAudit payload = new TransactionAudit(Integer.parseInt(action), Integer.parseInt(status), grp_id, grp_name, gateway_id, request_user_id, request_user_name, target_user_id, target_user_name, src_contract, src_chain_id, src_chain_name, des_contract, des_chain_id, des_chain_name, transaction_id.toString(), proof, receipt, time, dataHash, volume, behaviorContent, behavioralResults);
 
         try {
             auditManager.uploadAuditInfo(payload);

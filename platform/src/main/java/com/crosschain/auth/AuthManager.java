@@ -20,4 +20,8 @@ public class AuthManager {
         return false;
     }
 
+    public String getUserId(String user) {
+        return db.getUser(user).getUserId();
+    }
+
 }

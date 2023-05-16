@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class AuditManager {
 
-    Map<String,IAuditEntity> cache = new ConcurrentHashMap<>();
+    Map<String, IAuditEntity> cache = new ConcurrentHashMap<>();
 
     private CrossChainVo request;
 
@@ -29,8 +29,14 @@ public class AuditManager {
         return request.getGroup() + request.getDesChain() + request.getDesContract() + request.getDesFunction() + request.getDesArgs() + request.getSrcContract() + request.getSrcFunction() + request.getSrcArgs() + request.getUserName();
     }
 
-    public  String getUserInfo() {
+    public String getRequestUser() {
         return request.getUserName();
+    }
+
+    public String getTargetUser() {
+        String srcArgs = request.getSrcArgs();
+        String[] split = srcArgs.split("\r\n");
+        return split[1];
     }
 
     public void uploadAuditInfo(IAuditEntity entity) throws IOException {
@@ -38,15 +44,15 @@ public class AuditManager {
         // 上报
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             ClassicHttpRequest post = ClassicRequestBuilder.post(SystemInfo.getUploadServiceAddr()).addHeader("Content-Type", "application/json").setEntity(payload.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON).build();
-            client.execute(post,(r)->{
+            client.execute(post, (r) -> {
                 //receive from thgy
-                log.info("received from upper platform:\n{}",r);
+                log.info("received from upper platform:\n{}", r);
                 return null;
             });
-            log.info("upload audition info:{}",payload);
+            log.info("upload audition info:{}", payload);
 
         } catch (IOException e) {
-            log.error("[upload audition info failed]:{}",e.getMessage());
+            log.error("[upload audition info failed]:{}", e.getMessage());
             throw e;
         }
     }
