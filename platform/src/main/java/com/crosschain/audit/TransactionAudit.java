@@ -28,10 +28,10 @@ public class TransactionAudit implements IAuditEntity{
     String transaction_receipt;
     String transaction_time;
 
-    String dataHash;
+    String data_hash;
     Integer volume;
-    String behaviorContent;
-    String behavioralResults;
+    String behavior_content;
+    String behavioral_results;
 
 
     public TransactionAudit(Integer action, String channel_id, String channel_name, String gateway_ids, String request_user_id, String source_app_chain_contract, String source_app_chain_id, Integer status, String target_app_chain_contract, String target_app_chain_id, String transaction_id, String transaction_proof, String transaction_receipt, String transaction_time) {
@@ -51,7 +51,7 @@ public class TransactionAudit implements IAuditEntity{
         this.transaction_time = transaction_time;
     }
 
-    public TransactionAudit(Integer action, Integer status, String channel_id, String channel_name, String gateway_ids, String request_user_id, String request_user, String target_user_id, String target_user, String source_app_chain_contract, String source_app_chain_id, String source_app_chain_service, String target_app_chain_contract, String target_app_chain_id, String target_app_chain_service, String transaction_id, String transaction_proof, String transaction_receipt, String transaction_time, String dataHash, Integer volume, String behaviorContent, String behavioralResults) {
+    public TransactionAudit(Integer action, Integer status, String channel_id, String channel_name, String gateway_ids, String request_user_id, String request_user, String target_user_id, String target_user, String source_app_chain_contract, String source_app_chain_id, String source_app_chain_service, String target_app_chain_contract, String target_app_chain_id, String target_app_chain_service, String transaction_id, String transaction_proof, String transaction_receipt, String transaction_time, String data_hash, Integer volume, String behavior_content, String behavioralResults) {
         this.action = action;
         this.status = status;
         this.channel_id = channel_id;
@@ -71,10 +71,10 @@ public class TransactionAudit implements IAuditEntity{
         this.transaction_proof = transaction_proof;
         this.transaction_receipt = transaction_receipt;
         this.transaction_time = transaction_time;
-        this.dataHash = dataHash;
+        this.data_hash = data_hash;
         this.volume = volume;
-        this.behaviorContent = behaviorContent;
-        this.behavioralResults = behavioralResults;
+        this.behavior_content = behavior_content;
+        this.behavioral_results = behavioralResults;
     }
 
     @Override

@@ -35,12 +35,13 @@ public class AuditManager {
 
     public String getTargetUser() {
         String srcArgs = request.getSrcArgs();
-        String[] split = srcArgs.split("\r\n");
+        String[] split = srcArgs.split(",");
         return split[1];
     }
 
     public void uploadAuditInfo(IAuditEntity entity) throws IOException {
         String payload = entity.auditInfo();
+        log.info("[transaction upload data]:{}",payload);
         // 上报
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             ClassicHttpRequest post = ClassicRequestBuilder.post(SystemInfo.getUploadServiceAddr()).addHeader("Content-Type", "application/json").setEntity(payload.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON).build();
@@ -49,7 +50,7 @@ public class AuditManager {
                 log.info("received from upper platform:\n{}", r);
                 return null;
             });
-            log.info("upload audition info:{}", payload);
+            log.info("upload audition info successfully");
 
         } catch (IOException e) {
             log.error("[upload audition info failed]:{}", e.getMessage());
