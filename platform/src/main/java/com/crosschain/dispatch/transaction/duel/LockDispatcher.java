@@ -20,6 +20,7 @@ public class LockDispatcher extends TransactionBase {
         CommonChainRequest req = request.getDesChainRequest();
         checkAvailable(grp, req);
 
+        //读取源链设置的时间
         Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
         String origin = req.getArgs();
         Matcher m = p.matcher(origin);

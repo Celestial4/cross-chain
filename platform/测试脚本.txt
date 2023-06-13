@@ -10,12 +10,26 @@ curl localhost:3004/selfcall -H "Content-Type:application/json" -d '{"contract":
 
 fabric->hyperchain
 
-curl localhost:3001/crosschain -H "Content-Type:application/json" -d '{"mode": "single","group": "test","desChain": "hyperchain","desContract": "AssetTransfer","desFunction": "show","desArgs": "","srcContract": "CrossChain","srcFunction": "lock","srcArgs": "jack,jack1,qwer,100,1000","userName": "test","userToken": "test"}'
+curl localhost:3001/crosschain -H "Content-Type:application/json" -d '{"mode": "single","group": "test","desChain": "hyperchain","desContract": "AssetTransfer","desFunction": "show1","desArgs": "","srcContract": "CrossChain","srcFunction": "lock","srcArgs": "jack,jack1,qwer,100,1000","userName": "test","userToken": "test"}'
 
 curl localhost:3001/selfcall -H "Content-Type:application/json" -d '{"contract": "CrossChain","function": "show","args": ""}'|jq
 
 
-manager
-curl localhost:3001/add_chain -d 'chain_name=hyperchain'
+hyperchain->hyperchain2
 
-curl localhost:3001/add_group -d 'group_name=test&chains=fabric,hyperchain'
+curl localhost:3004/crosschain -H "Content-Type:application/json" -d '{"mode": "single","group": "test","desChain": "hyperchain2","desContract": "AssetTransfer","desFunction": "show","desArgs": "","srcContract": "AssetTransfer","srcFunction": "lock","srcArgs": "jack,jack1,qwer,1,1000","userName": "test","userToken": "test"}'
+
+curl localhost:3004/selfcall -H "Content-Type:application/json" -d '{"contract": "AssetTransfer","function": "show","args": ""}'|jq
+
+
+hyperchain2->hyperchain
+
+curl localhost:3004/crosschain -H "Content-Type:application/json" -d '{"mode": "single","group": "test","desChain": "hyperchain","desContract": "AssetTransfer","desFunction": "show","desArgs": "","srcContract": "AssetTransfer","srcFunction": "lock","srcArgs": "jack,jack1,qwer,10,1000","userName": "test","userToken": "test"}'
+
+curl localhost:3004/selfcall -H "Content-Type:application/json" -d '{"contract": "AssetTransfer","function": "show","args": ""}'|jq
+
+
+manager
+curl localhost:3001/add_chain -d 'chain_name=hyperchain2'
+
+curl localhost:3001/add_group -d 'group_name=test&chains=fabric,hyperchain2'

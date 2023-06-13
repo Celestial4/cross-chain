@@ -1,5 +1,6 @@
 package com.crosschain.dispatch.transaction.duel;
 
+import com.crosschain.common.CommonChainRequest;
 import com.crosschain.common.Group;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainRequest;
@@ -28,11 +29,24 @@ public abstract class TransactionBase extends BaseDispatcher {
                 response.setDesResult(des_res);
                 response.setSrcResult(src_res);
             } catch (Exception e) {
-                throw e;
+                rollBack(req);
             }
             return response;
         } else {
             throw new Exception("跨链请求失败，跨链群组当前不可用");
         }
+    }
+
+    private void rollBack(CrossChainRequest reqs) {
+        CommonChainRequest srcChainRequest = reqs.getSrcChainRequest();
+        CommonChainRequest desChainRequest = reqs.getDesChainRequest();
+
+        srcChainRequest.setFunction("rollback");
+        srcChainRequest.setArgs("");
+
+        desChainRequest.setFunction("rollback");
+        desChainRequest.setArgs("");
+
+        //todo 做具体的回滚流程
     }
 }

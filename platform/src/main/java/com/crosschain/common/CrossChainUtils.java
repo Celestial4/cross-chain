@@ -10,7 +10,7 @@ public class CrossChainUtils {
 
     private static MessageDigest digest;
 
-    {
+    static {
         try {
             digest = MessageDigest.getInstance("sha-256");
         } catch (NoSuchAlgorithmException e) {

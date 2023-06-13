@@ -51,7 +51,9 @@ public class ServerFace {
         log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}", des.getChainName(), des.getContract(), des.getFunction(), crossChainVo.getDesArgs(), src.getChainName(), src.getContract(), src.getFunction());
 
         try {
+            //鉴权
             filter.doFilter(crossChainVo);
+
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
             log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);

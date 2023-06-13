@@ -4,11 +4,14 @@ import com.crosschain.audit.AuditManager;
 import com.crosschain.common.*;
 import com.crosschain.group.GroupManager;
 import com.crosschain.service.response.Response;
+import lombok.extern.slf4j.Slf4j;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class BaseDispatcher implements Dispatcher {
     public void setGroupManager(GroupManager groupManager) {
         this.groupManager = groupManager;
@@ -64,5 +67,17 @@ public class BaseDispatcher implements Dispatcher {
     public Response process(CommonChainRequest req) throws Exception {
         //父类实现不做任何事情
         return null;
+    }
+
+    protected String sendTransaction(CommonChainRequest req) throws Exception {
+        String socAddress = SystemInfo.getServiceAddr(req.getChainName());
+        String[] socketInfo = socAddress.split(":");
+        log.info("-----call info-----\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
+
+        byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
+        String res = new String(data, StandardCharsets.UTF_8);
+        log.info("received from blockchain:{}\n{}", req.getChainName(), res);
+
+        return res;
     }
 }

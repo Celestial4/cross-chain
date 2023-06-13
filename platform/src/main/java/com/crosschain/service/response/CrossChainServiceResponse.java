@@ -10,6 +10,6 @@ public class CrossChainServiceResponse implements Response {
 
     @Override
     public String get() {
-        return String.format("[desChainResult]:---\n%s\n[srcChainResult]:---\n%s\n", desResult, srcResult);
+        return String.format("---[desChainResult]:---\n%s\n---[srcChainResult]:---\n%s\n", desResult, srcResult);
     }
 }
