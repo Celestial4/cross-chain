@@ -3,6 +3,8 @@ package com.crosschain.dispatch.transaction;
 import com.crosschain.audit.AuditManager;
 import com.crosschain.dispatch.transaction.duel.LockDispatcher;
 import com.crosschain.dispatch.transaction.duel.UnlockDispatcher;
+import com.crosschain.dispatch.transaction.duel.mode.EDispatcher;
+import com.crosschain.dispatch.transaction.duel.mode.PDispatcher;
 import com.crosschain.dispatch.transaction.single.SingleTransactionCrossChainDispatcher;
 import com.crosschain.group.GroupManager;
 import org.springframework.context.annotation.Bean;
@@ -35,10 +37,26 @@ public class TransactionDispatcherConfig {
 
     //todo 添加其他通信协议的dispatcher
     @Bean
-    public SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher(){
+    public SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher() {
         SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher = new SingleTransactionCrossChainDispatcher();
         singleTransactionCrossChainDispatcher.setGroupManager(groupManager);
         singleTransactionCrossChainDispatcher.setAuditManager(auditManager);
         return singleTransactionCrossChainDispatcher;
+    }
+
+    @Bean
+    public EDispatcher eDispatcher() {
+        EDispatcher e = new EDispatcher("E");
+        e.setGroupManager(groupManager);
+        e.setAuditManager(auditManager);
+        return e;
+    }
+
+    @Bean
+    PDispatcher pDispatcher() {
+        PDispatcher p = new PDispatcher("P");
+        p.setGroupManager(groupManager);
+        p.setAuditManager(auditManager);
+        return p;
     }
 }

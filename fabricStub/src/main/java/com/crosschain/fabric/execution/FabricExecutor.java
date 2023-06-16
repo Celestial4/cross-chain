@@ -28,14 +28,15 @@ public class FabricExecutor {
         byte[] res = null;
         try {
             if (Objects.isNull(args)) {
-                logger.info(Fabrics.logPlacehdr(),"executing contract:["+call+"]");
+                logger.info(Fabrics.logPlacehdr(), "executing contract:[" + call + "]");
                 res = contract.submitTransaction(call);
             } else {
-                logger.info(Fabrics.logPlacehdr(),"executing contract:["+call+ Arrays.toString(args)+"]");
-                res = contract.submitTransaction(call,args);
+                logger.info(Fabrics.logPlacehdr(), "executing contract:[" + call + Arrays.toString(args) + "]");
+                res = contract.submitTransaction(call, args);
             }
         } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
             e.printStackTrace();
+            return "{\"status\": 2,\"data\":\"" + e.getMessage() + "\"}";
         }
 
         Fabrics.closeChannel();

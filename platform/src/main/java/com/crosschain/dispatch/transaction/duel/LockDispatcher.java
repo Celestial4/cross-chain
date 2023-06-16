@@ -2,73 +2,104 @@ package com.crosschain.dispatch.transaction.duel;
 
 import com.crosschain.common.CommonChainRequest;
 import com.crosschain.common.Group;
-import com.crosschain.common.SystemInfo;
-import com.crosschain.dispatch.CrossChainClient;
 import com.crosschain.dispatch.CrossChainRequest;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
 public class LockDispatcher extends TransactionBase {
     private long src_deadline = 0L;
+    private long current_time = 0L;
 
     @Override
-    protected String doDes(CrossChainRequest request, Group grp) throws Exception {
-        CommonChainRequest req = request.getDesChainRequest();
+    protected String doDes(CommonChainRequest req, Group grp) throws Exception {
         checkAvailable(grp, req);
 
         //读取源链设置的时间
         Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
         String origin = req.getArgs();
         Matcher m = p.matcher(origin);
+        //设置目标链的哈希终止时间为源链的一半
         if (m.find()) {
             String origin_dl = m.group(2);
             origin = origin.replaceAll(origin_dl, String.valueOf(src_deadline / 2));
         } else {
             origin += "\r\n" + src_deadline / 2;
         }
+        //设置当前系统时间
+        origin += "\r\n" + current_time;
         req.setArgs(origin);
-        String socAddress = SystemInfo.getServiceAddr(req.getChainName());
 
         //call des
-        return lock_part(socAddress, req);
+        return lock_part(req);
     }
 
     @Override
-    protected String doSrc(CrossChainRequest request, Group grp) throws Exception {
-        CommonChainRequest req = request.getSrcChainRequest();
+    protected String doSrc(CommonChainRequest req, Group grp) throws Exception {
+
         checkAvailable(grp, req);
 
-        Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
+        Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+)$");
         Matcher m = p.matcher(req.getArgs());
+        //记录源链设置的哈希锁定终止时间
         if (m.find()) {
             src_deadline = Long.parseLong(m.group(5));
         } else {
             throw new Exception("哈希时间锁参数设置错误");
         }
-        String socAddress2 = SystemInfo.getServiceAddr(req.getChainName());
 
-        return lock_part(socAddress2, req);
+        //add current timestamp
+        current_time = System.currentTimeMillis() / 1000;
+        String ori = req.getArgs();
+        ori = ori + "\r\n" + current_time;
+        req.setArgs(ori);
+
+        return lock_part(req);
     }
 
-    private String lock_part(String socAddress, CommonChainRequest req) throws Exception {
-        String[] socketInfo = socAddress.split(":");
-        log.info("[src chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
+    @Override
+    protected String getRollbackArgs(CommonChainRequest req) throws Exception {
+        Pattern p = Pattern.compile("(\\w+)(\\s+)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
+        Matcher m = p.matcher(req.getArgs());
+        String sender;
+        String h;
+        if (m.find()) {
+            sender = m.group(1);
+            h = m.group(4);
+        } else {
+            throw new Exception("事务合约参数设置错误，请检查发送者和哈希原像参数");
+        }
+        return sender + "\r\n" + h;
+    }
 
-        byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
-        String res = new String(data, StandardCharsets.UTF_8);
-        log.debug("received from blockchain:{}\n{}", req.getChainName(),res);
+    @Override
+    protected void processLast(CrossChainRequest req, String unlockResult) throws Exception {
+        //do nothing in lock phase
+    }
+
+    private String lock_part(CommonChainRequest req) throws Exception {
+
+        String res = sendTransaction(req);
+        try {
+            boolean status = extractInfo("status", res).equals("1");
+            if (!status) {
+                throw new Exception(req.getChainName()+"资产锁定失败");
+            }
+        } catch (Exception e) {
+            throw new Exception("跨链失败：源链事务合约执行异常，" + e.getMessage());
+        }
+        String unlock_args = getRollbackArgs(req).replaceAll("\r\n",",");
 
         String REGEX = "addr:(\\w*)";
         Pattern p = Pattern.compile(REGEX);
         Matcher matcher = p.matcher(res);
         if (matcher.find()) {
-            return matcher.group(1);
+            unlock_args += ","+ matcher.group(1);
+            return unlock_args;
         }
 
-        throw new Exception(req.getChainName() + "锁定失败");
+        throw new Exception(req.getChainName() + "锁定成功，但是合约返回结果缺少必要字段addr");
     }
 }

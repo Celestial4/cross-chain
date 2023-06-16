@@ -9,9 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class TransactionBase extends BaseDispatcher {
-    abstract protected String doDes(CrossChainRequest req, Group grp) throws Exception;
+    abstract protected String doDes(CommonChainRequest req, Group grp) throws Exception;
 
-    abstract protected String doSrc(CrossChainRequest req, Group grp) throws Exception;
+    abstract protected String doSrc(CommonChainRequest req, Group grp) throws Exception;
+
+    abstract protected String getRollbackArgs(CommonChainRequest req) throws Exception;
+
+    abstract protected void processLast(CrossChainRequest req, String unlockResult) throws Exception;
 
     @Override
     public CrossChainServiceResponse process(CrossChainRequest req) throws Exception {
@@ -24,12 +28,16 @@ public abstract class TransactionBase extends BaseDispatcher {
             setLocalChain(req);
 
             try {
-                String src_res = doSrc(req, group);
-                String des_res = doDes(req, group);
+                String src_res = doSrc(req.getSrcChainRequest(), group);
+                String des_res = doDes(req.getDesChainRequest(), group);
+
+                //if unlock successfully, do upload audition info
+                processLast(req, src_res);
                 response.setDesResult(des_res);
                 response.setSrcResult(src_res);
             } catch (Exception e) {
-                rollBack(req);
+                rollBack(req, response);
+                throw new Exception("跨链失败，资产锁定合约执行异常:" + e.getMessage());
             }
             return response;
         } else {
@@ -37,16 +45,24 @@ public abstract class TransactionBase extends BaseDispatcher {
         }
     }
 
-    private void rollBack(CrossChainRequest reqs) {
+    private void rollBack(CrossChainRequest reqs, CrossChainServiceResponse response) throws Exception {
         CommonChainRequest srcChainRequest = reqs.getSrcChainRequest();
         CommonChainRequest desChainRequest = reqs.getDesChainRequest();
 
+        log.info("rollback src chain");
         srcChainRequest.setFunction("rollback");
-        srcChainRequest.setArgs("");
+        String src_rollbackArgs = getRollbackArgs(srcChainRequest);
+        srcChainRequest.setArgs(src_rollbackArgs);
+        String src_rollback_res = sendTransaction(srcChainRequest);
 
+        log.info("rollback des chain");
         desChainRequest.setFunction("rollback");
-        desChainRequest.setArgs("");
+        String des_rollbackArgs = getRollbackArgs(desChainRequest);
+        desChainRequest.setArgs(des_rollbackArgs);
+        String des_rollback_res = sendTransaction(desChainRequest);
 
-        //todo 做具体的回滚流程
+
+        response.setSrcResult(src_rollback_res);
+        response.setDesResult(des_rollback_res);
     }
 }

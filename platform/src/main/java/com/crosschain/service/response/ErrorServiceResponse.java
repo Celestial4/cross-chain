@@ -10,6 +10,6 @@ public class ErrorServiceResponse implements Response {
 
     @Override
     public String get() {
-        return errorMsg;
+        return "error:" + errorMsg;
     }
 }

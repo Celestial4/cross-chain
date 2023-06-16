@@ -2,86 +2,72 @@ package com.crosschain.dispatch.transaction.duel;
 
 import com.crosschain.common.CommonChainRequest;
 import com.crosschain.common.Group;
-import com.crosschain.common.SystemInfo;
-import com.crosschain.dispatch.CrossChainClient;
 import com.crosschain.dispatch.CrossChainRequest;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
 public class UnlockDispatcher extends TransactionBase {
     private String h;
+    private long current_time;
 
     @Override
-    protected String doDes(CrossChainRequest request, Group grp) throws Exception {
-        //actually do deschain
-        CommonChainRequest req = request.getSrcChainRequest();
+    protected String doDes(CommonChainRequest req, Group grp) throws Exception {
+
         checkAvailable(grp, req);
 
-        String origin = req.getArgs();
-        Pattern p = Pattern.compile("(^\\w+)\r\n(\\w+$)");
-        Matcher m = p.matcher(origin);
-        String args = "";
-        if (m.find()) {
-            String first = m.group(1);
-            String last = m.group(2);
-            args = first + h + "," + last;
-        }
-        req.setArgs(args);
-
-        String socketAddr = SystemInfo.getServiceAddr(req.getChainName());
+        String ori = req.getArgs();
+        ori = ori + "\r\n" + current_time;
+        req.setArgs(ori);
 
         //blockchain do unlock
-        return unlock_part(socketAddr, req);
+        return unlock_part(req);
     }
 
     @Override
-    protected String doSrc(CrossChainRequest request, Group grp) throws Exception {
-        //actually do deschain
-        CommonChainRequest req = request.getDesChainRequest();
+    protected String doSrc(CommonChainRequest req, Group grp) throws Exception {
         checkAvailable(grp, req);
+        //add current timestamp
+        current_time = System.currentTimeMillis() / 1000;
+        String ori = req.getArgs();
+        ori = ori + "\r\n" + current_time;
+        req.setArgs(ori);
+        //blockchain do unlock
+        return unlock_part(req);
+    }
 
-        String origin = req.getArgs();
-        Pattern p = Pattern.compile("(?<=\\w\r\n)(\\w+)(?=\r\n\\w)");
-        Matcher m = p.matcher(origin);
+    @Override
+    protected String getRollbackArgs(CommonChainRequest req) throws Exception {
+        Pattern p = Pattern.compile("^(\\w+)\\s+(\\w+)\\s+(\\w+)");
+        Matcher m = p.matcher(req.getArgs());
+        String sender;
+        String h;
         if (m.find()) {
-            h = m.group(1);
+            sender = m.group(1);
+            h = m.group(2);
         } else {
-            throw new Exception("没有哈希原像参数");
+            throw new Exception("事务合约参数设置错误，请检查发送者和哈希原像参数");
         }
-
-        if (m.find()) {
-            //有其他参数，表示非哈希事务合约
-            int count = 0;
-            while (count < 3) {
-                origin = origin.substring(origin.indexOf(",")+1);
-                count++;
-            }
-        }
-
-        req.setArgs(origin);
-        String socketAddr = SystemInfo.getServiceAddr(req.getChainName());
-
-        //blockchain do unlock
-        return unlock_part(socketAddr, req);
+        return sender + "\r\n" + h;
     }
 
-    private String unlock_part(String socAddress, CommonChainRequest req) throws Exception {
-        String[] socketInfo = socAddress.split(":");
-        log.info("[src chain intercall info]:\n[contract]:{},[function]:{},[args]:{}\n[connection]:{}", req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
+    @Override
+    protected void processLast(CrossChainRequest req, String unlockResult) throws Exception {
+        processAudit(req, unlockResult);
+    }
 
-        byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
-        String res = new String(data, StandardCharsets.UTF_8);
-        log.debug("received from blockchain:{}\n{}", req.getChainName(),res);
+    private String unlock_part(CommonChainRequest req) throws Exception {
+        String res = sendTransaction(req);
 
-        String REGEX = "success";
-        Pattern p = Pattern.compile(REGEX);
-        Matcher matcher = p.matcher(res);
-        if (matcher.find()) {
-            return matcher.group(1);
+        try {
+            boolean status = extractInfo("status", res).equals("1");
+            if (!status) {
+                throw new Exception(req.getChainName() + "资产解锁失败");
+            }
+        } catch (Exception e) {
+            throw new Exception("跨链失败：事务合约执行异常，" + e.getMessage());
         }
 
         throw new Exception(req.getChainName() + "解锁失败");

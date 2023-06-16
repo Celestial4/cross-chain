@@ -25,13 +25,13 @@ public class FabricStub {
         if (callInfo.length > 2) {
             args = new String[callInfo.length - 2];
             for (int i = 2; i < callInfo.length; i++) {
-                args[i-2] = callInfo[i];
+                args[i - 2] = callInfo[i];
             }
         }
 
-        logger.debug("sending args：[{},{},{}]",chaincode,method,args);
+        logger.debug("sending args：[{},{},{}]", chaincode, method, args);
         String res = executor.sendTransaction(chaincode, method, args);
-        logger.info(Fabrics.logPlacehdr(),"result gained from fabric:["+res+"]");
+        logger.info(Fabrics.logPlacehdr(), "result gained from fabric:[" + res + "]");
         return res;
     }
 }
