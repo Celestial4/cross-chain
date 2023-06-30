@@ -15,7 +15,6 @@ import com.crosschain.service.response.ErrorServiceResponse;
 import com.crosschain.service.response.Response;
 import com.crosschain.service.response.UniResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -102,7 +101,6 @@ public class ServerFace {
         try {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
-            log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -126,7 +124,6 @@ public class ServerFace {
         try {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
-            log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -137,49 +134,61 @@ public class ServerFace {
     }
 
     @PostMapping("/add_chain")
+    @ResponseBody
     public String addChain(@RequestParam("chain_name") String chainName,
                            @RequestParam(value = "chain_status", defaultValue = "0") int status) {
-        int cnt = groupManager.putChain(chainName, status);
-        return cnt > 0 ? "successful" : "failed";
+        try {
+            groupManager.putChain(chainName, status);
+
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success", String.format("链%s添加成功", chainName)).get();
     }
 
     @PostMapping("/add_group")
-    public String addChannel(@RequestParam("group_name") String groupName,
-                             @RequestParam(value = "group_status", defaultValue = "0") int status,
-                             @RequestParam(value = "chains", defaultValue = "") String chains) {
-        String[] split = null;
-        if (Strings.isNotEmpty(chains)) {
-            split = chains.split(",");
+    @ResponseBody
+    public String addGroup(@RequestParam("group_name") String groupName,
+                           @RequestParam(value = "group_status", defaultValue = "0") int status) {
+        try {
+            groupManager.putGroup0(groupName, status);
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
         }
-        int cnt = groupManager.putGroup(groupName, status, split);
-        return cnt > 0 ? "successful" : "failed";
+        return new UniResponse(200, "success", String.format("群组%s添加成功", groupName)).get();
     }
 
     @GetMapping("/ping")
+    @ResponseBody
     public String ping() {
         UniResponse uniResponse = new UniResponse(200, "success", "pong");
         return uniResponse.get();
     }
 
     @PostMapping("/move")
+    @ResponseBody
     public String move(@RequestParam("src_group_n") String sr_cnl_n,
-                       @RequestParam(value = "des_group_n", defaultValue = "") String des_cnl_n,
+                       @RequestParam(value = "des_grp_n", defaultValue = "") String des_grp_n,
                        @RequestParam("chain_n") String chain_n) {
-        int res_code;
-        if (Strings.isEmpty(des_cnl_n)) {
-            res_code = groupManager.removeTo(sr_cnl_n, null, chain_n);
-        } else {
-            res_code = groupManager.removeTo(sr_cnl_n, des_cnl_n, chain_n);
+        try {
+            groupManager.removeTo(sr_cnl_n, des_grp_n, chain_n);
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
         }
-        return res_code == 1 ? "operation failed" : "operation success";
+        return new UniResponse(200, "success", "操作成功").get();
     }
 
     @PostMapping("update")
+    @ResponseBody
     public String update(@RequestParam(value = "type", defaultValue = "1") int type,
                          @RequestParam("target") String target,
                          @RequestParam("status") int status) {
-        int res_code = groupManager.updateStatus(type, target, status);
-        return res_code == 1 ? "operation failed" : "operation success";
+        try {
+            groupManager.updateStatus(type, target, status);
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success", "操作成功").get();
     }
 
 

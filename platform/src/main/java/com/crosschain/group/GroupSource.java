@@ -3,8 +3,11 @@ package com.crosschain.group;
 import com.crosschain.common.Chain;
 import com.crosschain.common.Group;
 import com.crosschain.common.Mappers;
+import com.crosschain.exception.SqlException;
+import com.crosschain.exception.UniException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -49,13 +52,13 @@ public class GroupSource {
         return sql.query("select chain_id,chain_name,chain_status from (select t1.channel_name name,t3.*  from channel t1,channel_chain t2,chain t3 where t1.channel_id=t2.channel_id and t2.chain_id=t3.chain_id) t4 where name=?", Mappers.chainRowMapper, channel);
     }
 
-    public int newGroup(Group group) {
+    public int newGroup(Group group) throws UniException{
         int cnt = 0;
         try {
             cnt = sql.update("insert into channel values(?,?,?)", group.getGroupId(), group.getGroupName(), group.getStatus());
-            logger.debug("[new group]:create channel successfully");
         } catch (Exception e) {
             logger.error(e.getMessage());
+            throw new SqlException(e.getMessage());
         }
         return cnt;
     }
@@ -75,7 +78,7 @@ public class GroupSource {
         }
     }
 
-    public int addChain(Chain... chain) {
+    public int addChain(Chain... chain) throws UniException {
         int cnt = 0;
         try {
             for (Chain c : chain) {
@@ -84,6 +87,7 @@ public class GroupSource {
             logger.info("[add new chain]: insert chains successfully total counts: {}", cnt);
         } catch (Exception e) {
             logger.error(e.getMessage());
+            throw new SqlException("数据库执行异常："+e.getMessage());
         }
         return cnt;
     }
@@ -109,12 +113,20 @@ public class GroupSource {
         sql.update("delete from channel_chain where channel_id=? and chain_id=?", channel_id, chain_id);
     }
 
-    public void updateGroup(String cnl_name, int status) {
-        sql.update("update channel set channel_status=? where channel_name=?", status, cnl_name);
+    public void updateGroup(String cnl_name, int status) throws UniException{
+        try {
+            sql.update("update channel set channel_status=? where channel_name=?", status, cnl_name);
+        } catch (Exception e) {
+            throw new SqlException(e.getMessage());
+        }
     }
 
-    public void updateChain(String c_name, int status) {
-        sql.update("update chain set chain_status=? where chain_name=?", status, c_name);
+    public void updateChain(String c_name, int status) throws UniException{
+        try {
+            sql.update("update chain set chain_status=? where chain_name=?", status, c_name);
+        } catch (DataAccessException e) {
+            throw new SqlException(e.getMessage());
+        }
     }
 
     public Chain getChain(String cName) {
