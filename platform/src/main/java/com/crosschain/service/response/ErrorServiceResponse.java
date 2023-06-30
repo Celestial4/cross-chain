@@ -1,15 +1,19 @@
 package com.crosschain.service.response;
 
-public class ErrorServiceResponse implements Response {
+import com.crosschain.exception.UniException;
 
-    String errorMsg;
+public class ErrorServiceResponse extends UniResponse {
 
-    public ErrorServiceResponse(String errorMsg) {
-        this.errorMsg = errorMsg;
+    UniException e;
+
+    public ErrorServiceResponse(UniException exception) {
+        this.e = exception;
     }
 
     @Override
     public String get() {
-        return "error:" + errorMsg;
+        code = e.getErrorCode();
+        message = e.getErrorMsg();
+        return super.get();
     }
 }

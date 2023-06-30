@@ -55,12 +55,12 @@ public class GroupManager {
                 for (Chain chain : allChain) {
                     cnt = ds.associate(existedGroup.getGroupId(), chain.getChainId());
                 }
-                log.info("add to group:[{}], associated chains:[{}]", groupName, Arrays.toString(chains));
+                log.info("add to group:{}, associated chains:{}", groupName, Arrays.toString(chains));
                 if (allChain.size() != chains.length) {
                     log.info("add to group, but some of chains not found");
                 }
             } else {
-                log.info("add to group, but chains:[{}] not found", (Object) chains);
+                log.info("add to group, but chains:{} not found", (Object) chains);
             }
         } else {
             Group group = new Group();

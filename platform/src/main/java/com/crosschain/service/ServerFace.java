@@ -6,12 +6,14 @@ import com.crosschain.common.SystemInfo;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
+import com.crosschain.exception.UniException;
 import com.crosschain.filter.RequestFilter;
 import com.crosschain.group.GroupManager;
 import com.crosschain.service.request.CrossChainVo;
 import com.crosschain.service.request.SelfVo;
 import com.crosschain.service.response.ErrorServiceResponse;
 import com.crosschain.service.response.Response;
+import com.crosschain.service.response.UniResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.bind.annotation.*;
@@ -43,23 +45,21 @@ public class ServerFace {
 
         CommonChainRequest des = new CommonChainRequest();
 
-        setRequest(crossChainVo, src, des);
+        constructRequest(crossChainVo, src, des);
         auditManager.setRequest(crossChainVo);
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
-        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{}", des.getChainName(), des.getContract(), des.getFunction(), crossChainVo.getDesArgs(), src.getChainName(), src.getContract(), src.getFunction());
+        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{},{}", des.getChainName(), des.getContract(), des.getFunction(), des.getArgs(), src.getChainName(), src.getContract(), src.getFunction(), src.getArgs());
 
         try {
             //鉴权
             filter.doFilter(crossChainVo);
-
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
-            log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
             response = dispatcher.process(req);
         } catch (Exception e) {
             log.error(e.getMessage());
-            response = new ErrorServiceResponse(e.getMessage());
+            response = new ErrorServiceResponse((UniException) e);
         }
 
         return response.get();
@@ -71,18 +71,18 @@ public class ServerFace {
         Dispatcher dispatcher;
         Response response;
         CommonChainRequest crossChainRequest = new CommonChainRequest();
-        crossChainRequest.setChainName(SystemInfo.getSelfChainName());
-        crossChainRequest.setContract(vo.getContract());
-        crossChainRequest.setFunction(vo.getFunction());
-        crossChainRequest.setArgs(vo.getArgs().replaceAll(",","\r\n"));
-
         try {
+            crossChainRequest.setChainName(SystemInfo.getSelfChainName());
+            crossChainRequest.setContract(vo.getContract());
+            crossChainRequest.setFunction(vo.getFunction());
+            crossChainRequest.setArgs(vo.getArgs());
+
             dispatcher = dispatcherManager.getDispatcher(vo.getMode());
-            log.debug("[acquired crosschain dispatcher]: {}", dispatcher.getClass());
+
             response = dispatcher.process(crossChainRequest);
         } catch (Exception e) {
             log.error(e.getMessage());
-            response = new ErrorServiceResponse(e.getMessage());
+            response = new ErrorServiceResponse((UniException) e);
         }
 
         return response.get();
@@ -94,7 +94,7 @@ public class ServerFace {
         crossChainVo.setMode("lock");
         CommonChainRequest src = new CommonChainRequest();
         CommonChainRequest des = new CommonChainRequest();
-        setRequest(crossChainVo, src, des);
+        constructRequest(crossChainVo, src, des);
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
@@ -106,7 +106,7 @@ public class ServerFace {
             response = dispatcher.process(req);
         } catch (Exception e) {
             log.error(e.getMessage());
-            response = new ErrorServiceResponse(e.getMessage());
+            response = new ErrorServiceResponse((UniException) e);
         }
 
         return response.get();
@@ -118,7 +118,7 @@ public class ServerFace {
         crossChainVo.setMode("unlock");
         CommonChainRequest src = new CommonChainRequest();
         CommonChainRequest des = new CommonChainRequest();
-        setRequest(crossChainVo, src, des);
+        constructRequest(crossChainVo, src, des);
 
         Dispatcher dispatcher;
         CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
@@ -130,7 +130,7 @@ public class ServerFace {
             response = dispatcher.process(req);
         } catch (Exception e) {
             log.error(e.getMessage());
-            response = new ErrorServiceResponse(e.getMessage());
+            response = new ErrorServiceResponse((UniException) e);
         }
 
         return response.get();
@@ -155,6 +155,12 @@ public class ServerFace {
         return cnt > 0 ? "successful" : "failed";
     }
 
+    @GetMapping("/ping")
+    public String ping() {
+        UniResponse uniResponse = new UniResponse(200, "success", "pong");
+        return uniResponse.get();
+    }
+
     @PostMapping("/move")
     public String move(@RequestParam("src_group_n") String sr_cnl_n,
                        @RequestParam(value = "des_group_n", defaultValue = "") String des_cnl_n,
@@ -177,15 +183,13 @@ public class ServerFace {
     }
 
 
-    private void setRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) {
+    private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) {
         src.setChainName("local");
         src.setContract(crossChainVo.getSrcContract());
         src.setFunction(crossChainVo.getSrcFunction());
-        src.setArgs(crossChainVo.getSrcArgs().replaceAll(",", "\r\n"));
 
         des.setChainName(crossChainVo.getDesChain());
         des.setContract(crossChainVo.getDesContract());
         des.setFunction(crossChainVo.getDesFunction());
-        des.setArgs(crossChainVo.getDesArgs().replaceAll(",", "\r\n"));
     }
 }

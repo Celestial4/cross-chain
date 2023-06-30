@@ -3,6 +3,8 @@ package com.crosschain.dispatch;
 import com.crosschain.audit.AuditManager;
 import com.crosschain.audit.TransactionAudit;
 import com.crosschain.common.*;
+import com.crosschain.exception.CrossChainException;
+import com.crosschain.exception.ResolveException;
 import com.crosschain.group.GroupManager;
 import com.crosschain.service.response.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +30,7 @@ public class BaseDispatcher implements Dispatcher {
 
     protected AuditManager auditManager;
 
-    protected void setLocalChain(CrossChainRequest req) {
+    protected void setLocalChain(CrossChainRequest req) throws Exception{
         CommonChainRequest src = req.getSrcChainRequest();
         if (src.getChainName().equals("local")) {
             src.setChainName(SystemInfo.getSelfChainName());
@@ -41,13 +43,19 @@ public class BaseDispatcher implements Dispatcher {
     }
 
     protected void checkAvailable(Group grp, CommonChainRequest reqInfo) throws Exception {
+        if (grp.getStatus() != 0) {
+            throw new CrossChainException(101, String.format("跨链群组当前不可用,status=%d", grp.getStatus()));
+        }
+
         Chain chain = grp.getChain(reqInfo.getChainName());
 
-        if (!Objects.nonNull(chain)) {
-            throw new Exception("target chain is not in crosschain group");
+        if (Objects.isNull(chain)) {
+            throw new CrossChainException(102, "目标链不在跨链群组中，请先联系跨链管理员");
         } else if (chain.getStatus() != 0) {
-            throw new Exception("target chain is not available now");
+            throw new CrossChainException(103, String.format("目标链当前不可用,status=%d", chain.getStatus()));
         }
+
+        log.info("group:{},{},chain:{},{}",grp.getGroupName(),grp.getStatus(),chain.getChainName(),chain.getStatus());
     }
 
     protected String extractInfo(String field, String source) throws Exception {
@@ -56,7 +64,7 @@ public class BaseDispatcher implements Dispatcher {
         if (m.find()) {
             return m.group();
         } else {
-            throw new Exception("合约返回值中不能解析出" + field + "字段");
+            throw new ResolveException(field);
         }
     }
 
@@ -73,15 +81,23 @@ public class BaseDispatcher implements Dispatcher {
     }
 
     protected String sendTransaction(CommonChainRequest req) throws Exception {
-        String socAddress = SystemInfo.getServiceAddr(req.getChainName());
-        String[] socketInfo = socAddress.split(":");
-        log.info("-----call info-----\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
+        try {
+            String socAddress = SystemInfo.getServiceAddr(req.getChainName());
+            String[] socketInfo = socAddress.split(":");
+            log.info("[-----call info-----]\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
-        byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
-        String res = new String(data, StandardCharsets.UTF_8);
-        log.info("received from blockchain:{}\n{}", req.getChainName(), res);
+            //符合跨链服务组件的格式要求
+            req.setArgs(req.getArgs().replaceAll(",", "\r\n"));
 
-        return res;
+            byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
+
+            String res = new String(data, StandardCharsets.UTF_8);
+            log.info("received from blockchain:{},{}", req.getChainName(), res);
+
+            return res;
+        } catch (Exception e) {
+            throw new CrossChainException(500,String.format("合约%s执行异常：%s",req.getChainName(),e.getMessage()));
+        }
     }
 
     protected void processAudit(CrossChainRequest req, String msgRtd) throws Exception {

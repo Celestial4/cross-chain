@@ -21,28 +21,24 @@ public abstract class TransactionBase extends BaseDispatcher {
     public CrossChainServiceResponse process(CrossChainRequest req) throws Exception {
 
         Group group = groupManager.getGroup(req.getGroup());
-        log.debug("[current group info]: {}", group.toString());
-        if (group.getStatus() == 0) {
-            log.info("[group info]: {},{}", group.getGroupName(), group.getStatus() == 0 ? "active" : "unavailable");
-            CrossChainServiceResponse response = new CrossChainServiceResponse();
-            setLocalChain(req);
 
-            try {
-                String src_res = doSrc(req.getSrcChainRequest(), group);
-                String des_res = doDes(req.getDesChainRequest(), group);
+        CrossChainServiceResponse response = new CrossChainServiceResponse();
+        setLocalChain(req);
 
-                //if unlock successfully, do upload audition info
-                processLast(req, src_res);
-                response.setDesResult(des_res);
-                response.setSrcResult(src_res);
-            } catch (Exception e) {
-                rollBack(req, response);
-                throw new Exception("跨链失败，资产锁定合约执行异常:" + e.getMessage());
-            }
-            return response;
-        } else {
-            throw new Exception("跨链请求失败，跨链群组当前不可用");
+        try {
+            String src_res = doSrc(req.getSrcChainRequest(), group);
+            String des_res = doDes(req.getDesChainRequest(), group);
+
+            //if unlock successfully, do upload audition info
+            processLast(req, src_res);
+            response.setDesResult(des_res);
+            response.setSrcResult(src_res);
+        } catch (Exception e) {
+            rollBack(req, response);
+            throw e;
         }
+        return response;
+
     }
 
     private void rollBack(CrossChainRequest reqs, CrossChainServiceResponse response) throws Exception {

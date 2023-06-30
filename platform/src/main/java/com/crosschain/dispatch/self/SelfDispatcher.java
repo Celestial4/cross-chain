@@ -10,7 +10,7 @@ public class SelfDispatcher extends BaseDispatcher {
     @Override
     public Response process(CommonChainRequest req) throws Exception {
 
-        log.info("[self call info]---\n");
+        log.info("[---self call info---]\n");
         String res = sendTransaction(req);
 
         return new SelfServiceResponse(res);

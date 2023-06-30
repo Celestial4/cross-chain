@@ -1,12 +1,11 @@
 package com.crosschain.common;
 
+import com.crosschain.exception.CrossChainException;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public class SystemInfo {
 
@@ -21,15 +20,26 @@ public class SystemInfo {
         readUpload();
     }
 
-    public static String getServiceAddr(String chainName) {
-        return maps.get(chainName);
+    public static String getServiceAddr(String chainName) throws Exception {
+        String serviceAddr = maps.get(chainName);
+        if (Objects.isNull(serviceAddr)) {
+            throw new CrossChainException(501,String.format("找不到跨链服务组件:%s",chainName));
+        }
+        return serviceAddr;
     }
 
-    public static String getSelfChainName() {
+    public static String getSelfChainName() throws Exception{
+        if (Strings.isEmpty(uploadAddr)) {
+            throw new CrossChainException(503, "请检查conf/config.properties配置文件");
+        }
+
         return selfChainName;
     }
 
-    public static String getUploadServiceAddr() {
+    public static String getUploadServiceAddr() throws Exception{
+        if (Strings.isEmpty(uploadAddr)) {
+            throw new CrossChainException(502, "没有找到事务上传接口，请检查conf/thgy.properties配置文件");
+        }
         return uploadAddr;
     }
 

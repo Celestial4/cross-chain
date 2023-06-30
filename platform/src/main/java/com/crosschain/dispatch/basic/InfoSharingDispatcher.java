@@ -21,27 +21,25 @@ public abstract class InfoSharingDispatcher extends BaseDispatcher {
     @Override
     public CrossChainServiceResponse process(CrossChainRequest request) throws Exception {
         Group group = groupManager.getGroup(request.getGroup());
-        log.debug("[current group info]: {}", group.toString());
-        if (group.getStatus() == 0) {
-            CrossChainServiceResponse response = new CrossChainServiceResponse();
-            setLocalChain(request);
 
-            CommonChainResponse DesRes = processDes(request.getDesChainRequest(), group);
-            response.setDesResult(DesRes.getResult());
+        CrossChainServiceResponse response = new CrossChainServiceResponse();
+        setLocalChain(request);
 
-            CommonChainRequest srcChainRequest = request.getSrcChainRequest();
-            if ("".equals(srcChainRequest.getArgs())) {
-                srcChainRequest.setArgs(processResult(DesRes));
-            }
-            CommonChainResponse srcRes = processSrc(srcChainRequest, group);
+        CommonChainRequest desChainRequest = request.getDesChainRequest();
+        CommonChainResponse DesRes = processDes(desChainRequest, group);
+        response.setDesResult(DesRes.getResult());
 
-            //源链执行后上报数据
-            processAudit(request, srcRes.getResult());
-            response.setSrcResult(srcRes.getResult());
-
-            return response;
-        } else {
-            throw new Exception("跨链请求失败，跨链群组当前不可用");
+        CommonChainRequest srcChainRequest = request.getSrcChainRequest();
+        if ("".equals(srcChainRequest.getArgs())) {
+            //如果需要在源链上回写目标链合约结果，修改processResult（）函数
+            srcChainRequest.setArgs(processResult(DesRes));
         }
+        CommonChainResponse srcRes = processSrc(srcChainRequest, group);
+
+        //源链执行后上报数据
+        processAudit(request, srcRes.getResult());
+        response.setSrcResult(srcRes.getResult());
+
+        return response;
     }
 }

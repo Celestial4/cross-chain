@@ -20,25 +20,16 @@ public class OtherDispatcher extends BaseDispatcher {
         CommonChainRequest desChainRequest = req.getDesChainRequest();
 
         Group group = groupManager.getGroup(req.getGroup());
-        log.debug("[current group info]: {}", group.toString());
-        if (group.getStatus() == 0) {
-            log.info("[group info]: {},{}", group.getGroupName(), group.getStatus() == 0 ? "active" : "unavailable");
+        checkAvailable(group,srcChainRequest);
 
-            setLocalChain(req);
+        setLocalChain(req);
 
-            try {
-                String SPLITTER = "\r\n";
-                String args = srcChainRequest.getArgs() + SPLITTER + desChainRequest.getChainName() + SPLITTER + desChainRequest.getArgs() + SPLITTER + mode;
-                srcChainRequest.setArgs(args);
+        String SPLITTER = ",";
+        String args = srcChainRequest.getArgs() + SPLITTER + desChainRequest.getChainName() + SPLITTER + desChainRequest.getArgs() + SPLITTER + mode;
+        srcChainRequest.setArgs(args);
 
-                String result = sendTransaction(srcChainRequest);
+        String result = sendTransaction(srcChainRequest);
 
-                return new SelfServiceResponse(result);
-            } catch (Exception e) {
-                throw new Exception("跨链资产转移失败："+e.getMessage());
-            }
-        } else {
-            throw new Exception("跨链请求失败，跨链群组当前不可用");
-        }
+        return new SelfServiceResponse(result);
     }
 }

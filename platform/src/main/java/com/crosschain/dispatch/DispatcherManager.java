@@ -1,5 +1,6 @@
 package com.crosschain.dispatch;
 
+import com.crosschain.exception.CrossChainException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 
@@ -21,6 +22,6 @@ public class DispatcherManager {
                 return entry.getValue();
             }
         }
-        throw new Exception("跨链通信协议设置错误");
+        throw new CrossChainException(100,String.format("跨链通信协议%s设置错误，请查阅相关手册", mode));
     }
 }

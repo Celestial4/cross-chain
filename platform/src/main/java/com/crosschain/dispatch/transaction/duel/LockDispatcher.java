@@ -3,6 +3,9 @@ package com.crosschain.dispatch.transaction.duel;
 import com.crosschain.common.CommonChainRequest;
 import com.crosschain.common.Group;
 import com.crosschain.dispatch.CrossChainRequest;
+import com.crosschain.exception.ArgsResolveException;
+import com.crosschain.exception.CrossChainException;
+import com.crosschain.exception.ResolveException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.regex.Matcher;
@@ -18,7 +21,7 @@ public class LockDispatcher extends TransactionBase {
         checkAvailable(grp, req);
 
         //读取源链设置的时间
-        Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+$)");
+        Pattern p = Pattern.compile("(\\w+,){4}(\\d+$)");
         String origin = req.getArgs();
         Matcher m = p.matcher(origin);
         //设置目标链的哈希终止时间为源链的一半
@@ -26,13 +29,14 @@ public class LockDispatcher extends TransactionBase {
             String origin_dl = m.group(2);
             origin = origin.replaceAll(origin_dl, String.valueOf(src_deadline / 2));
         } else {
-            origin += "\r\n" + src_deadline / 2;
+            origin += "," + src_deadline / 2;
         }
         //设置当前系统时间
-        origin += "\r\n" + current_time;
+        origin += "," + current_time;
         req.setArgs(origin);
 
         //call des
+        log.info("[src chain do]:\n");
         return lock_part(req);
     }
 
@@ -41,27 +45,28 @@ public class LockDispatcher extends TransactionBase {
 
         checkAvailable(grp, req);
 
-        Pattern p = Pattern.compile("(\\w+\r\n){4}(\\d+)$");
+        Pattern p = Pattern.compile("(\\w+,){4}(\\d+)$");
         Matcher m = p.matcher(req.getArgs());
         //记录源链设置的哈希锁定终止时间
         if (m.find()) {
             src_deadline = Long.parseLong(m.group(5));
         } else {
-            throw new Exception("哈希时间锁参数设置错误");
+            throw new ArgsResolveException("哈希时间");
         }
 
         //add current timestamp
         current_time = System.currentTimeMillis() / 1000;
         String ori = req.getArgs();
-        ori = ori + "\r\n" + current_time;
+        ori = ori + "," + current_time;
         req.setArgs(ori);
 
+        log.info("[src chain do]:\n");
         return lock_part(req);
     }
 
     @Override
     protected String getRollbackArgs(CommonChainRequest req) throws Exception {
-        Pattern p = Pattern.compile("(\\w+)(\\s+)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
+        Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
         Matcher m = p.matcher(req.getArgs());
         String sender;
         String h;
@@ -69,9 +74,9 @@ public class LockDispatcher extends TransactionBase {
             sender = m.group(1);
             h = m.group(4);
         } else {
-            throw new Exception("事务合约参数设置错误，请检查发送者和哈希原像参数");
+            throw new ArgsResolveException("发送者和哈希原像");
         }
-        return sender + "\r\n" + h;
+        return sender + "," + h;
     }
 
     @Override
@@ -82,24 +87,22 @@ public class LockDispatcher extends TransactionBase {
     private String lock_part(CommonChainRequest req) throws Exception {
 
         String res = sendTransaction(req);
-        try {
-            boolean status = extractInfo("status", res).equals("1");
-            if (!status) {
-                throw new Exception(req.getChainName()+"资产锁定失败");
-            }
-        } catch (Exception e) {
-            throw new Exception("跨链失败：源链事务合约执行异常，" + e.getMessage());
+
+        boolean status = extractInfo("status", res).equals("1");
+        if (!status) {
+            throw new CrossChainException(104, req.getChainName() + "资产锁定失败");
         }
-        String unlock_args = getRollbackArgs(req).replaceAll("\r\n",",");
+
+        String unlock_args = getRollbackArgs(req);
 
         String REGEX = "addr:(\\w*)";
         Pattern p = Pattern.compile(REGEX);
         Matcher matcher = p.matcher(res);
         if (matcher.find()) {
-            unlock_args += ","+ matcher.group(1);
+            unlock_args += "," + matcher.group(1);
             return unlock_args;
         }
 
-        throw new Exception(req.getChainName() + "锁定成功，但是合约返回结果缺少必要字段addr");
+        throw new ResolveException("addr");
     }
 }

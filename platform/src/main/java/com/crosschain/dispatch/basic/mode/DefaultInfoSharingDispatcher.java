@@ -14,9 +14,8 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
     protected CommonChainResponse processDes(CommonChainRequest req, Group group) throws
             Exception {
         checkAvailable(group, req);
+        log.info("[---dest call info---]\n");
         String res = sendTransaction(req);
-
-        log.info("[dest call info]---\n");
 
         return new CommonChainResponse(res);
     }
@@ -24,9 +23,8 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
     @Override
     protected CommonChainResponse processSrc(CommonChainRequest req, Group group) throws Exception {
         checkAvailable(group, req);
+        log.info("[---src call info---]\n");
         String res = sendTransaction(req);
-
-        log.info("[src call info]---\n");
 
         return new CommonChainResponse(res);
     }

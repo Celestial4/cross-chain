@@ -55,6 +55,10 @@ public class AuditManager {
         } catch (IOException e) {
             log.error("[upload audition info failed]:{}", e.getMessage());
             throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+
 }
