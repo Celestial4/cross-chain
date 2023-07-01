@@ -53,7 +53,7 @@ public class TransactionAudit {
     String behavioral_results;
 
     public static TransactionAudit construct(GroupManager groupManager, AuditManager auditManager, CrossChainRequest req, String transactionRes,String req_id) throws Exception {
-        String proof = "", timestamp = "0", action = "2", status = "-1";
+        String proof, timestamp, action, status;
 
         try {
             proof = CrossChainUtils.extractInfo("hash", transactionRes);
@@ -62,7 +62,7 @@ public class TransactionAudit {
             status = CrossChainUtils.extractInfo("status", transactionRes);
         } catch (UniException e) {
             proof = "rollback";
-            timestamp=new Date().toString();
+            timestamp=String.valueOf(System.currentTimeMillis());
             action = "2";
             status = "-1";
         }

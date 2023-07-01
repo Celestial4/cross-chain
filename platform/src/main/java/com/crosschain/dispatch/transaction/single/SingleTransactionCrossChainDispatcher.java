@@ -29,7 +29,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
     CommonChainResponse processSrcLock(CommonChainRequest req, String id) throws Exception {
 
-        log.info("[src chain do]:\n");
+        log.info("[src chain do lock]:\n");
         String res = sendTransaction(req);
         auditManager.addProcess(id, new ProcessAudit(new Date().toString(), "lock", res));
         Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
@@ -42,6 +42,11 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         }
         auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, lock_time));
         if (!extractInfo("status", res).equals("1")) {
+            auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, "lock failed."));
+            TransactionAudit au = new TransactionAudit();
+            au.setStatus(2);
+            auditManager.addTransactionInfo(id, au);
+            auditManager.uploadAuditInfo(id);
             throw new CrossChainException(104, String.format("源链资产锁定失败,请检查跨链参数或相应区块链，详情：%s", extractInfo("data", res)));
         }
 
@@ -50,7 +55,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
     CommonChainResponse processSrcUnlock(CommonChainRequest req, String id) throws Exception {
 
-        log.info("[src chain do]:\n");
+        log.info("[src chain do unlock]:\n");
         String res = sendTransaction(req);
         auditManager.addProcess(id, new ProcessAudit(new Date().toString(), "unlock", res));
         if (!extractInfo("status", res).equals("1")) {
@@ -61,13 +66,13 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
     CommonChainResponse processSrcRollback(CommonChainRequest req, String id) throws Exception {
 
-        log.info("[src chain do]:\n");
+        log.info("[src chain do rollback]:\n");
         String res = sendTransaction(req);
         auditManager.addProcess(id, new ProcessAudit(new Date().toString(), "rollback", res));
+        auditManager.getHTLCInfo(id).setHtlc_status("状态回滚，不解锁");
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(106, String.format("源链资产回滚失败,详情：%s", extractInfo("data", res)));
         }
-        auditManager.getHTLCInfo(id).setHtlc_status("状态回滚，不解锁");
         return new CommonChainResponse(res);
     }
 
@@ -92,6 +97,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         //源链锁资产
         CommonChainResponse srcRes = null;
+
         srcRes = processSrcLock(srcChainRequest, requestId);
         response.setSrcResult("[lock]:\n" + srcRes.getResult() + "\n");
 
