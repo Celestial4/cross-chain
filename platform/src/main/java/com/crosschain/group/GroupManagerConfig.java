@@ -1,6 +1,8 @@
 package com.crosschain.group;
 
 import javax.annotation.Resource;
+
+import com.crosschain.datasource.GroupAndChainSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class GroupManagerConfig {
 
     @Resource
-    private GroupSource db;
+    private GroupAndChainSource db;
 
     @Bean
     public GroupManager channelManager() {

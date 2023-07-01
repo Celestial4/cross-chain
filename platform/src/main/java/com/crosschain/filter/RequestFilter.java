@@ -13,10 +13,10 @@ public class RequestFilter {
     private AuthManager authManager;
 
     public void doFilter(CrossChainVo crossChainVo) throws Exception{
-        if (!authManager.authForUser(crossChainVo.getUserName(), crossChainVo.getUserToken())) {
+        if (!authManager.authForUser(crossChainVo.getUser_name(), crossChainVo.getUser_token())) {
             throw new Exception("authentication failed!");
         }
-        if (crossChainVo.getDesChain().equals(SystemInfo.getSelfChainName())) {
+        if (crossChainVo.getDes_chain().equals(SystemInfo.getSelfChainName())) {
             throw new Exception("目标链指向自己");
         }
     }

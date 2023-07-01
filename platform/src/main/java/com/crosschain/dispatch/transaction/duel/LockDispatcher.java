@@ -1,7 +1,7 @@
 package com.crosschain.dispatch.transaction.duel;
 
-import com.crosschain.common.CommonChainRequest;
-import com.crosschain.common.Group;
+import com.crosschain.common.entity.CommonChainRequest;
+import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.exception.ArgsResolveException;
 import com.crosschain.exception.CrossChainException;
@@ -18,7 +18,7 @@ public class LockDispatcher extends TransactionBase {
 
     @Override
     protected String doDes(CommonChainRequest req, Group grp) throws Exception {
-        checkAvailable(grp, req);
+        checkAvailable0(grp, req);
 
         //读取源链设置的时间
         Pattern p = Pattern.compile("(\\w+,){4}(\\d+$)");
@@ -43,7 +43,7 @@ public class LockDispatcher extends TransactionBase {
     @Override
     protected String doSrc(CommonChainRequest req, Group grp) throws Exception {
 
-        checkAvailable(grp, req);
+        checkAvailable0(grp, req);
 
         Pattern p = Pattern.compile("(\\w+,){4}(\\d+)$");
         Matcher m = p.matcher(req.getArgs());

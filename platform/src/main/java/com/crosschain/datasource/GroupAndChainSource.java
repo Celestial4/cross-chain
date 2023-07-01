@@ -1,8 +1,7 @@
-package com.crosschain.group;
+package com.crosschain.datasource;
 
-import com.crosschain.common.Chain;
-import com.crosschain.common.Group;
-import com.crosschain.common.Mappers;
+import com.crosschain.common.entity.Chain;
+import com.crosschain.common.entity.Group;
 import com.crosschain.exception.SqlException;
 import com.crosschain.exception.UniException;
 import org.slf4j.Logger;
@@ -16,9 +15,9 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class GroupSource {
+public class GroupAndChainSource {
 
-    private final Logger logger = LoggerFactory.getLogger(GroupSource.class);
+    private final Logger logger = LoggerFactory.getLogger(GroupAndChainSource.class);
 
     @Resource
     private JdbcTemplate sql;
@@ -49,10 +48,10 @@ public class GroupSource {
     }
 
     private List<Chain> getRelatedChains(String channel) {
-        return sql.query("select chain_id,chain_name,chain_status from (select t1.channel_name name,t3.*  from channel t1,channel_chain t2,chain t3 where t1.channel_id=t2.channel_id and t2.chain_id=t3.chain_id) t4 where name=?", Mappers.chainRowMapper, channel);
+        return sql.query("select chain_id,chain_name,chain_status,chain_type from (select t1.channel_name name,t3.*  from channel t1,channel_chain t2,chain t3 where t1.channel_id=t2.channel_id and t2.chain_id=t3.chain_id) t4 where name=?", Mappers.chainRowMapper, channel);
     }
 
-    public int newGroup(Group group) throws UniException{
+    public int newGroup(Group group) throws UniException {
         int cnt = 0;
         try {
             cnt = sql.update("insert into channel values(?,?,?)", group.getGroupId(), group.getGroupName(), group.getStatus());
@@ -82,12 +81,12 @@ public class GroupSource {
         int cnt = 0;
         try {
             for (Chain c : chain) {
-                cnt += sql.update("insert into chain values(?,?,?)", c.getChainId(), c.getChainName(), c.getStatus());
+                cnt += sql.update("insert into chain values(?,?,?,?)", c.getChainId(), c.getChainName(), c.getStatus(), c.getChainType());
             }
             logger.info("[add new chain]: insert chains successfully total counts: {}", cnt);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            throw new SqlException("数据库执行异常："+e.getMessage());
+            throw new SqlException("数据库执行异常：" + e.getMessage());
         }
         return cnt;
     }
@@ -113,7 +112,7 @@ public class GroupSource {
         sql.update("delete from channel_chain where channel_id=? and chain_id=?", channel_id, chain_id);
     }
 
-    public void updateGroup(String cnl_name, int status) throws UniException{
+    public void updateGroup(String cnl_name, int status) throws UniException {
         try {
             sql.update("update channel set channel_status=? where channel_name=?", status, cnl_name);
         } catch (Exception e) {
@@ -121,7 +120,7 @@ public class GroupSource {
         }
     }
 
-    public void updateChain(String c_name, int status) throws UniException{
+    public void updateChain(String c_name, int status) throws UniException {
         try {
             sql.update("update chain set chain_status=? where chain_name=?", status, c_name);
         } catch (DataAccessException e) {

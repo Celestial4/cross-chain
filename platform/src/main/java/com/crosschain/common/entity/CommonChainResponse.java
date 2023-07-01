@@ -1,4 +1,4 @@
-package com.crosschain.common;
+package com.crosschain.common.entity;
 
 import lombok.Data;
 

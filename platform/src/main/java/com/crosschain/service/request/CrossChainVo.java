@@ -4,16 +4,17 @@ import lombok.Data;
 
 @Data
 public class CrossChainVo {
+    String request_id;
     String group;
-    String desChain;
-    String desContract;
-    String desFunction;
-    String desArgs = "";
+    String des_chain;
+    String des_contract;
+    String des_function;
+    String des_args = "";
 
-    String srcContract;
-    String srcFunction;
-    String srcArgs = "";
+    String src_contract;
+    String src_function;
+    String src_args = "";
     String mode = "default";
-    String userName;
-    String userToken;
+    String user_name;
+    String user_token;
 }

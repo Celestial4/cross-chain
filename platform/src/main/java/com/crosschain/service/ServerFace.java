@@ -1,7 +1,7 @@
 package com.crosschain.service;
 
 import com.crosschain.audit.AuditManager;
-import com.crosschain.common.CommonChainRequest;
+import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.SystemInfo;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
@@ -11,13 +11,16 @@ import com.crosschain.filter.RequestFilter;
 import com.crosschain.group.GroupManager;
 import com.crosschain.service.request.CrossChainVo;
 import com.crosschain.service.request.SelfVo;
-import com.crosschain.service.response.ErrorServiceResponse;
+import com.crosschain.service.response.entity.ErrorServiceResponse;
 import com.crosschain.service.response.Response;
 import com.crosschain.service.response.UniResponse;
+import com.crosschain.thread.Task;
+import com.crosschain.thread.ThreadManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 
 @RestController
 @Slf4j
@@ -35,6 +38,8 @@ public class ServerFace {
     @Resource
     private RequestFilter filter;
 
+    private final ThreadManager pool = new ThreadManager();
+
     Response response;
 
     @PostMapping("/crosschain")
@@ -45,17 +50,20 @@ public class ServerFace {
         CommonChainRequest des = new CommonChainRequest();
 
         constructRequest(crossChainVo, src, des);
-        auditManager.setRequest(crossChainVo);
-
-        Dispatcher dispatcher;
-        CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
-        log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{},{}", des.getChainName(), des.getContract(), des.getFunction(), des.getArgs(), src.getChainName(), src.getContract(), src.getFunction(), src.getArgs());
-
         try {
+            auditManager.joinRequest(crossChainVo);
+
+            Dispatcher dispatcher;
+            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
+            log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{},{}", des.getChainName(), des.getContract(), des.getFunction(), des.getArgs(), src.getChainName(), src.getContract(), src.getFunction(), src.getArgs());
+
             //鉴权
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
-            response = dispatcher.process(req);
+            dispatcher.saveRequestId(crossChainVo.getRequest_id());
+            dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
+            pool.addTask(new Task(dispatcher, req));
+            response = new UniResponse(200, "success", "跨链请求已提交");
         } catch (Exception e) {
             log.error(e.getMessage());
             response = new ErrorServiceResponse((UniException) e);
@@ -101,7 +109,9 @@ public class ServerFace {
         try {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
-            response = dispatcher.process(req);
+            dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
+            pool.addTask(new Task(dispatcher, req));
+            response = new UniResponse(200, "success", "跨链请求已提交");
         } catch (Exception e) {
             log.error(e.getMessage());
             response = new ErrorServiceResponse((UniException) e);
@@ -124,7 +134,9 @@ public class ServerFace {
         try {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
-            response = dispatcher.process(req);
+            dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
+            pool.addTask(new Task(dispatcher, req));
+            response = new UniResponse(200, "success", "跨链请求已提交");
         } catch (Exception e) {
             log.error(e.getMessage());
             response = new ErrorServiceResponse((UniException) e);
@@ -194,11 +206,11 @@ public class ServerFace {
 
     private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) {
         src.setChainName("local");
-        src.setContract(crossChainVo.getSrcContract());
-        src.setFunction(crossChainVo.getSrcFunction());
+        src.setContract(crossChainVo.getSrc_contract());
+        src.setFunction(crossChainVo.getSrc_function());
 
-        des.setChainName(crossChainVo.getDesChain());
-        des.setContract(crossChainVo.getDesContract());
-        des.setFunction(crossChainVo.getDesFunction());
+        des.setChainName(crossChainVo.getDes_chain());
+        des.setContract(crossChainVo.getDes_contract());
+        des.setFunction(crossChainVo.getDes_function());
     }
 }

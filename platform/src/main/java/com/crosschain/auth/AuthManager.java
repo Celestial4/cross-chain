@@ -1,14 +1,16 @@
 package com.crosschain.auth;
 
+import com.crosschain.datasource.UserAuthSource;
+
 import java.util.List;
 
 public class AuthManager {
 
-    public void setDb(AuthSource db) {
+    public void setDb(UserAuthSource db) {
         this.db = db;
     }
 
-    private AuthSource db;
+    private UserAuthSource db;
 
     public boolean authForUser(String user, String passwd) {
         List<AuthEntity> allUser = db.getAllUser();

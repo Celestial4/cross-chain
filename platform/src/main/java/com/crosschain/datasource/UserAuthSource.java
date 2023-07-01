@@ -1,6 +1,6 @@
-package com.crosschain.auth;
+package com.crosschain.datasource;
 
-import com.crosschain.common.Mappers;
+import com.crosschain.auth.AuthEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +8,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Component
-public class AuthSource {
+public class UserAuthSource {
 
     @Resource
     private JdbcTemplate sql;

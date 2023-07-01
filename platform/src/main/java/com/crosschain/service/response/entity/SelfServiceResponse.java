@@ -1,5 +1,6 @@
-package com.crosschain.service.response;
+package com.crosschain.service.response.entity;
 
+import com.crosschain.service.response.UniResponse;
 import lombok.Data;
 
 @Data

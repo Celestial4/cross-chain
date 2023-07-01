@@ -1,9 +1,12 @@
-package com.crosschain.service.response;
+package com.crosschain.service.response.entity;
 
+import com.crosschain.service.response.UniResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

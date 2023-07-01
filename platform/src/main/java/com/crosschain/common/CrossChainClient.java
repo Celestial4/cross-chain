@@ -1,4 +1,4 @@
-package com.crosschain.dispatch;
+package com.crosschain.common;
 
 import java.io.InputStream;
 import java.io.OutputStream;

@@ -1,10 +1,10 @@
 package com.crosschain.dispatch.transaction.duel;
 
-import com.crosschain.common.CommonChainRequest;
-import com.crosschain.common.Group;
+import com.crosschain.common.entity.CommonChainRequest;
+import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainRequest;
-import com.crosschain.service.response.CrossChainServiceResponse;
+import com.crosschain.service.response.entity.CrossChainServiceResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

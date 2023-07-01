@@ -1,7 +1,7 @@
 package com.crosschain.dispatch.transaction.duel;
 
-import com.crosschain.common.CommonChainRequest;
-import com.crosschain.common.Group;
+import com.crosschain.common.entity.CommonChainRequest;
+import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.exception.ArgsResolveException;
 import com.crosschain.exception.CrossChainException;
@@ -17,7 +17,7 @@ public class UnlockDispatcher extends TransactionBase {
     @Override
     protected String doDes(CommonChainRequest req, Group grp) throws Exception {
 
-        checkAvailable(grp, req);
+        checkAvailable0(grp, req);
 
         String ori = req.getArgs();
         ori = ori + "," + current_time;
@@ -29,7 +29,7 @@ public class UnlockDispatcher extends TransactionBase {
 
     @Override
     protected String doSrc(CommonChainRequest req, Group grp) throws Exception {
-        checkAvailable(grp, req);
+        checkAvailable0(grp, req);
         //add current timestamp
         current_time = System.currentTimeMillis() / 1000;
         String ori = req.getArgs();
@@ -56,7 +56,7 @@ public class UnlockDispatcher extends TransactionBase {
 
     @Override
     protected void processLast(CrossChainRequest req, String unlockResult) throws Exception {
-        processAudit(req, unlockResult);
+
     }
 
     private String unlock_part(CommonChainRequest req) throws Exception {

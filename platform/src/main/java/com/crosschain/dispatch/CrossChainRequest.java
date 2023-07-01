@@ -1,6 +1,6 @@
 package com.crosschain.dispatch;
 
-import com.crosschain.common.CommonChainRequest;
+import com.crosschain.common.entity.CommonChainRequest;
 
 public class CrossChainRequest{
     private CommonChainRequest srcChain;

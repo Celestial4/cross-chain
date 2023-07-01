@@ -1,6 +1,8 @@
-package com.crosschain.common;
+package com.crosschain.datasource;
 
 import com.crosschain.auth.AuthEntity;
+import com.crosschain.common.entity.Chain;
+import com.crosschain.common.entity.Group;
 import org.springframework.jdbc.core.RowMapper;
 
 public class Mappers {
@@ -17,6 +19,7 @@ public class Mappers {
         chain.setChainId(res.getString(1));
         chain.setChainName(res.getString(2));
         chain.setStatus(res.getInt(3));
+        chain.setChainType(res.getString(4));
         return chain;
     };
 

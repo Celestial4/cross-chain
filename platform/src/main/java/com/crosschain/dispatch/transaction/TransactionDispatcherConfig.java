@@ -25,14 +25,16 @@ public class TransactionDispatcherConfig {
     public LockDispatcher lockDispatcher() {
         LockDispatcher lockDispatcher = new LockDispatcher();
         lockDispatcher.setGroupManager(groupManager);
+        lockDispatcher.setCrossChainMechanism(1);
         return lockDispatcher;
     }
 
     @Bean
     public UnlockDispatcher unlockDispatcher() {
-        UnlockDispatcher lockDispatcher = new UnlockDispatcher();
-        lockDispatcher.setGroupManager(groupManager);
-        return lockDispatcher;
+        UnlockDispatcher unlockDispatcher = new UnlockDispatcher();
+        unlockDispatcher.setGroupManager(groupManager);
+        unlockDispatcher.setCrossChainMechanism(1);
+        return unlockDispatcher;
     }
 
     //todo 添加其他通信协议的dispatcher
@@ -41,22 +43,27 @@ public class TransactionDispatcherConfig {
         SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher = new SingleTransactionCrossChainDispatcher();
         singleTransactionCrossChainDispatcher.setGroupManager(groupManager);
         singleTransactionCrossChainDispatcher.setAuditManager(auditManager);
+        singleTransactionCrossChainDispatcher.setCrossChainMechanism(1);
         return singleTransactionCrossChainDispatcher;
     }
 
     @Bean
     public EDispatcher eDispatcher() {
+        //NOTARY
         EDispatcher e = new EDispatcher("E");
         e.setGroupManager(groupManager);
         e.setAuditManager(auditManager);
+        e.setCrossChainMechanism(2);
         return e;
     }
 
     @Bean
     PDispatcher pDispatcher() {
+        //DPK
         PDispatcher p = new PDispatcher("P");
         p.setGroupManager(groupManager);
         p.setAuditManager(auditManager);
+        p.setCrossChainMechanism(3);
         return p;
     }
 }

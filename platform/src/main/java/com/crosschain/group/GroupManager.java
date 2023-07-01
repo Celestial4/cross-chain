@@ -1,8 +1,8 @@
 package com.crosschain.group;
 
-import com.crosschain.common.Chain;
-import com.crosschain.common.Group;
-import com.crosschain.common.Loggers;
+import com.crosschain.common.entity.Chain;
+import com.crosschain.common.entity.Group;
+import com.crosschain.datasource.GroupAndChainSource;
 import com.crosschain.exception.OperationException;
 import com.crosschain.exception.UniException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,11 +15,11 @@ public class GroupManager {
 
     private final Map<String, Group> groups = new HashMap<>();
 
-    public void setDs(GroupSource ds) {
+    public void setDs(GroupAndChainSource ds) {
         this.ds = ds;
     }
 
-    private GroupSource ds;
+    private GroupAndChainSource ds;
 
     public void init() {
         List<Group> groups = ds.getAllGroups();
@@ -54,7 +54,7 @@ public class GroupManager {
         groups.put(group.getGroupName(), group);
         ds.newGroup(group);
 
-        log.info(Loggers.LOGFORMAT, String.format("create group:[%s]", grpName));
+        log.info("create group:[{}]", grpName);
     }
 
     //解耦，deprecated
@@ -90,7 +90,7 @@ public class GroupManager {
             groups.put(group.getGroupName(), group);
             cnt = ds.newGroup(group);
             ds.associate(group);
-            log.info(Loggers.LOGFORMAT, String.format("create group:[%s], associated chains:[%s]", groupName, Arrays.toString(chains)));
+            log.info(String.format("create group:[%s], associated chains:[%s]", groupName, Arrays.toString(chains)));
         }
 
         return cnt;
@@ -117,7 +117,7 @@ public class GroupManager {
                 ds.updateChain(target, status);
                 break;
         }
-        log.info(Loggers.LOGFORMAT, "update success!");
+        log.info("update success!");
     }
 
     public void removeTo(String srcGrpName, String desGrpName, String cName) throws UniException {
