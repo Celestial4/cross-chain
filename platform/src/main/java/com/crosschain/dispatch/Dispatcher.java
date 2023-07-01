@@ -14,4 +14,6 @@ public interface Dispatcher {
     void checkAvailable(Group grp, List<CommonChainRequest> reqs) throws Exception;
 
     void saveRequestId(String id);
+
+    void completeTask();
 }

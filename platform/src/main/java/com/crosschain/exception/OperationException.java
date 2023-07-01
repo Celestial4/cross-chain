@@ -15,6 +15,6 @@ public class OperationException extends UniException {
 
     @Override
     public String getErrorMsg() {
-        return null;
+        return msg;
     }
 }

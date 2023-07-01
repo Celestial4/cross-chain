@@ -23,7 +23,6 @@ public abstract class TransactionBase extends BaseDispatcher {
         Group group = groupManager.getGroup(req.getGroup());
 
         CrossChainServiceResponse response = new CrossChainServiceResponse();
-        setLocalChain(req);
 
         try {
             String src_res = doSrc(req.getSrcChainRequest(), group);

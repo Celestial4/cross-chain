@@ -11,6 +11,6 @@ public class ThreadManager {
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public void addTask(Runnable task) {
-        executor.execute(task);
+        executor.submit(task);
     }
 }

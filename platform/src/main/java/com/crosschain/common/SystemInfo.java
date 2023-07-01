@@ -29,7 +29,7 @@ public class SystemInfo {
     }
 
     public static String getSelfChainName() throws Exception{
-        if (Strings.isEmpty(uploadAddr)) {
+        if (Strings.isEmpty(selfChainName)) {
             throw new CrossChainException(503, "请检查conf/config.properties配置文件");
         }
 

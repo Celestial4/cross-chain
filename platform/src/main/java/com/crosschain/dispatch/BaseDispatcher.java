@@ -43,18 +43,6 @@ public class BaseDispatcher implements Dispatcher {
         this.auditManager = auditManager;
     }
 
-    protected void setLocalChain(CrossChainRequest req) throws Exception{
-        CommonChainRequest src = req.getSrcChainRequest();
-        if (src.getChainName().equals("local")) {
-            src.setChainName(SystemInfo.getSelfChainName());
-        }
-
-        CommonChainRequest des = req.getDesChainRequest();
-        if (des.getChainName().equals("local")) {
-            des.setChainName(SystemInfo.getSelfChainName());
-        }
-    }
-
     protected void checkAvailable0(Group grp, CommonChainRequest reqInfo) throws Exception {
         if (grp.getStatus() != 0) {
             throw new CrossChainException(101, String.format("跨链群组当前不可用,status=%d", grp.getStatus()));
@@ -99,16 +87,18 @@ public class BaseDispatcher implements Dispatcher {
         setRequestId(id);
     }
 
+    @Override
+    public void completeTask() {
+        auditManager.completeRequest(requestId);
+    }
+
     protected String sendTransaction(CommonChainRequest req) throws Exception {
         try {
             String socAddress = SystemInfo.getServiceAddr(req.getChainName());
             String[] socketInfo = socAddress.split(":");
             log.info("[-----call info-----]\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
-            //符合跨链服务组件的格式要求
-            req.setArgs(req.getArgs().replaceAll(",", "\r\n"));
-
-            byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs()});
+            byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n")});
 
             String res = new String(data, StandardCharsets.UTF_8);
             log.info("received from blockchain:{},{}", req.getChainName(), res);

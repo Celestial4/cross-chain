@@ -33,8 +33,9 @@ public class AuditManager {
             FullAuditInfo ai = new FullAuditInfo();
             ai.setRequest_id(id);
             cache.put(id, ai);
+        } else {
+            throw new OperationException(String.format("%s跨链请求已经存在", id));
         }
-        throw new OperationException(String.format("%s跨链请求已经存在", id));
     }
 
     public void completeRequest(String id) {

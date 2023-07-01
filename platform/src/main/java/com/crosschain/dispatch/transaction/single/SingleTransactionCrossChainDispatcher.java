@@ -24,6 +24,14 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         log.info("[des chain do]:\n");
         String res = sendTransaction(req);
         auditManager.addProcess(requestId, new ProcessAudit(new Date().toString(),"call contract of destination chain",res));
+        return new CommonChainResponse(res);
+    }
+
+    CommonChainResponse processSrcLock(CommonChainRequest req, Group group) throws Exception {
+
+        log.info("[src chain do]:\n");
+        String res = sendTransaction(req);
+        auditManager.addProcess(requestId,new ProcessAudit(new Date().toString(), "lock", res));
         Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
         Matcher m = p.matcher(req.getArgs());
         String lock_amount = null;
@@ -33,17 +41,9 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             lock_time = m.group(6);
         }
         auditManager.addHTLCInfo(requestId,new HTLCMechanismInfo(lock_amount,lock_amount,lock_time));
-        return new CommonChainResponse(res);
-    }
-
-    CommonChainResponse processSrcLock(CommonChainRequest req, Group group) throws Exception {
-
-        log.info("[src chain do]:\n");
-        String res = sendTransaction(req);
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(104, String.format("源链资产锁定失败,请检查跨链参数或相应区块链，详情：%s", extractInfo("data",res)));
         }
-        auditManager.addProcess(requestId,new ProcessAudit(new Date().toString(), "lock", res));
 
         return new CommonChainResponse(res);
     }
@@ -52,10 +52,10 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         log.info("[src chain do]:\n");
         String res = sendTransaction(req);
+        auditManager.addProcess(requestId,new ProcessAudit(new Date().toString(), "unlock", res));
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(105, String.format("源链资产解锁失败,详情：%s", extractInfo("data",res)));
         }
-        auditManager.addProcess(requestId,new ProcessAudit(new Date().toString(), "unlock", res));
         return new CommonChainResponse(res);
     }
 
@@ -63,18 +63,16 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         log.info("[src chain do]:\n");
         String res = sendTransaction(req);
+        auditManager.addProcess(requestId,new ProcessAudit(new Date().toString(),"rollback",res));
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(106, String.format("源链资产回滚失败,详情：%s", extractInfo("data",res)));
         }
-        auditManager.addProcess(requestId,new ProcessAudit(new Date().toString(),"rollback",res));
         auditManager.getHTLCInfo(requestId).setHtlc_status("状态回滚，不解锁");
         return new CommonChainResponse(res);
     }
 
     @Override
     public CrossChainServiceResponse process(CrossChainRequest request) throws Exception {
-        setLocalChain(request);
-
         auditManager.setMechanism(requestId,"1");
 
         Group group = groupManager.getGroup(request.getGroup());
@@ -139,7 +137,6 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         }finally {
             auditManager.addTransactionInfo(requestId,transAuditInfo);
             auditManager.uploadAuditInfo(requestId);
-            auditManager.completeRequest(requestId);
         }
 
         return response;

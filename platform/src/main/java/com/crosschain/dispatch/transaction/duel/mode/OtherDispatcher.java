@@ -22,8 +22,6 @@ public class OtherDispatcher extends BaseDispatcher {
         Group group = groupManager.getGroup(req.getGroup());
         checkAvailable0(group,srcChainRequest);
 
-        setLocalChain(req);
-
         String SPLITTER = ",";
         String args = srcChainRequest.getArgs() + SPLITTER + desChainRequest.getChainName() + SPLITTER + desChainRequest.getArgs() + SPLITTER + mode;
         srcChainRequest.setArgs(args);

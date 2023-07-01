@@ -23,7 +23,6 @@ public abstract class InfoSharingDispatcher extends BaseDispatcher {
         Group group = groupManager.getGroup(request.getGroup());
 
         CrossChainServiceResponse response = new CrossChainServiceResponse();
-        setLocalChain(request);
 
         CommonChainRequest desChainRequest = request.getDesChainRequest();
         CommonChainResponse DesRes = processDes(desChainRequest, group);

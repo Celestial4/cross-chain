@@ -49,8 +49,8 @@ public class ServerFace {
 
         CommonChainRequest des = new CommonChainRequest();
 
-        constructRequest(crossChainVo, src, des);
         try {
+            constructRequest(crossChainVo, src, des);
             auditManager.joinRequest(crossChainVo);
 
             Dispatcher dispatcher;
@@ -101,12 +101,12 @@ public class ServerFace {
         crossChainVo.setMode("lock");
         CommonChainRequest src = new CommonChainRequest();
         CommonChainRequest des = new CommonChainRequest();
-        constructRequest(crossChainVo, src, des);
-
-        Dispatcher dispatcher;
-        CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
-
         try {
+            constructRequest(crossChainVo, src, des);
+            Dispatcher dispatcher;
+            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
+
+
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
             dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
@@ -126,12 +126,13 @@ public class ServerFace {
         crossChainVo.setMode("unlock");
         CommonChainRequest src = new CommonChainRequest();
         CommonChainRequest des = new CommonChainRequest();
-        constructRequest(crossChainVo, src, des);
-
-        Dispatcher dispatcher;
-        CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
-
         try {
+            constructRequest(crossChainVo, src, des);
+
+            Dispatcher dispatcher;
+            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup());
+
+
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
             dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
@@ -204,13 +205,15 @@ public class ServerFace {
     }
 
 
-    private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) {
-        src.setChainName("local");
+    private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) throws Exception {
+        src.setChainName(SystemInfo.getSelfChainName());
         src.setContract(crossChainVo.getSrc_contract());
         src.setFunction(crossChainVo.getSrc_function());
+        src.setArgs(crossChainVo.getSrc_args());
 
         des.setChainName(crossChainVo.getDes_chain());
         des.setContract(crossChainVo.getDes_contract());
         des.setFunction(crossChainVo.getDes_function());
+        des.setArgs(crossChainVo.getDes_args());
     }
 }
