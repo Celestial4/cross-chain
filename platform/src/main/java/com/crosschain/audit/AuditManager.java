@@ -57,6 +57,12 @@ public class AuditManager {
         cache.get(id).setTransaction_result(t);
     }
 
+    public String show(){
+        String res = "";
+        res += cache.keySet();
+        return res;
+    }
+
     public void addHTLCInfo(String id, HTLCMechanismInfo h) {
         cache.get(id).setMechanism_info1(h);
     }

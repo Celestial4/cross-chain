@@ -18,7 +18,6 @@ import java.util.Objects;
 
 @Slf4j
 public class BaseDispatcher implements Dispatcher {
-    protected String requestId;
 
     protected Integer CrossChainMechanism;
 
@@ -28,15 +27,10 @@ public class BaseDispatcher implements Dispatcher {
 
     public void setGroupManager(GroupManager groupManager) {
         this.groupManager = groupManager;
-
     }
 
     public void setCrossChainMechanism(Integer crossChainMechanism) {
         CrossChainMechanism = crossChainMechanism;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
     }
 
     public void setAuditManager(AuditManager auditManager) {
@@ -82,14 +76,10 @@ public class BaseDispatcher implements Dispatcher {
         }
     }
 
-    @Override
-    public void saveRequestId(String id) {
-        setRequestId(id);
-    }
 
     @Override
-    public void completeTask() {
-        auditManager.completeRequest(requestId);
+    public void completeTask(String id) {
+        auditManager.completeRequest(id);
     }
 
     protected String sendTransaction(CommonChainRequest req) throws Exception {

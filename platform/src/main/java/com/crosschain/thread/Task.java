@@ -1,5 +1,6 @@
 package com.crosschain.thread;
 
+import com.crosschain.audit.AuditManager;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.exception.UniException;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Task implements Runnable{
     private Dispatcher dispatcher;
     private CrossChainRequest crossChainRequest;
+    private AuditManager auditManager;
 
     @Override
     public void run() {
@@ -23,7 +25,9 @@ public class Task implements Runnable{
             log.error(new ErrorServiceResponse((UniException) e).get());
             e.printStackTrace();
         }finally {
-            dispatcher.completeTask();
+            log.info("clear task:{}",auditManager.show());
+            dispatcher.completeTask(crossChainRequest.getRequestId());
+            log.info("after clearing:{}", auditManager.show());
         }
     }
 }
