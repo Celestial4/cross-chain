@@ -31,10 +31,10 @@ public class CrossChainUtils {
     }
 
     public static String extractInfo(String field, String source) throws Exception {
-        Pattern p = Pattern.compile(String.format("(?<=%s\"?:\\s?\"?)([\\w,.:\\s]+)\"?", field));
+        Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", field));
         Matcher m = p.matcher(source);
         if (m.find()) {
-            return m.group(1);
+            return m.group(3);
         } else {
             throw new ResolveException(field);
         }
