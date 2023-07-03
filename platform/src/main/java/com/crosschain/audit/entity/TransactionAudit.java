@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -52,7 +51,7 @@ public class TransactionAudit {
     String behavior_content;
     String behavioral_results;
 
-    public static TransactionAudit construct(GroupManager groupManager, AuditManager auditManager, CrossChainRequest req, String transactionRes,String req_id) throws Exception {
+    public static TransactionAudit construct(GroupManager groupManager, AuditManager auditManager, CrossChainRequest req, String transactionRes, String req_id) throws Exception {
         String proof, timestamp, action, status;
 
         try {
@@ -62,18 +61,18 @@ public class TransactionAudit {
             status = CrossChainUtils.extractInfo("status", transactionRes);
         } catch (UniException e) {
             proof = "rollback";
-            timestamp=String.valueOf(System.currentTimeMillis());
+            timestamp = "0";
             action = "2";
             status = "-1";
         }
 
-        String time = new Date(Long.parseLong(timestamp)).toString();
+        String time = timestamp;
         String receipt = "1".equals(status) ? "成功" : "失败";
 
         Group group = groupManager.getGroup(req.getGroup());
         String grp_name = group.getGroupName();
         String grp_id = group.getGroupId();
-        String gateway_id = SystemInfo.getServiceAddr(SystemInfo.getSelfChainName())+","+SystemInfo.getServiceAddr(req.getDesChainRequest().getChainName());
+        String gateway_id = SystemInfo.getServiceAddr(SystemInfo.getSelfChainName()) + "," + SystemInfo.getServiceAddr(req.getDesChainRequest().getChainName());
 
         Chain sChain = group.getChain(SystemInfo.getSelfChainName());
         String src_chain_id = sChain.getChainId();

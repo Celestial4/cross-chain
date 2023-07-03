@@ -14,6 +14,7 @@ import com.crosschain.service.request.SelfVo;
 import com.crosschain.service.response.entity.ErrorServiceResponse;
 import com.crosschain.service.response.Response;
 import com.crosschain.service.response.UniResponse;
+import com.crosschain.statistics.STATCSManager;
 import com.crosschain.thread.Task;
 import com.crosschain.thread.ThreadManager;
 import lombok.extern.slf4j.Slf4j;
@@ -190,7 +191,7 @@ public class ServerFace {
         return new UniResponse(200, "success", "操作成功").get();
     }
 
-    @PostMapping("update")
+    @PostMapping("/update")
     @ResponseBody
     public String update(@RequestParam(value = "type", defaultValue = "1") int type,
                          @RequestParam("target") String target,
@@ -203,6 +204,19 @@ public class ServerFace {
         return new UniResponse(200, "success", "操作成功").get();
     }
 
+    @GetMapping("/cpu")
+    @ResponseBody
+    public String getCpuInfo() {
+        String cpuInfo = STATCSManager.getCpuInfo();
+        return new UniResponse(200,"success",cpuInfo).get();
+    }
+
+    @GetMapping("/mem")
+    @ResponseBody
+    public String getMemInfo() {
+        String memoryInfo = STATCSManager.getMemoryInfo();
+        return new UniResponse(200,"success",memoryInfo).get();
+    }
 
     private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) throws Exception {
         src.setChainName(SystemInfo.getSelfChainName());

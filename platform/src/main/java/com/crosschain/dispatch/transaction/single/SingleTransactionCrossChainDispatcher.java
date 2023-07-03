@@ -12,7 +12,6 @@ import com.crosschain.exception.CrossChainException;
 import com.crosschain.service.response.entity.CrossChainServiceResponse;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +22,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         log.info("[des chain do]:\n");
         String res = sendTransaction(req);
-        auditManager.addProcess(id, new ProcessAudit(new Date().toString(), "call contract of destination chain", res));
+        auditManager.addProcess(id, new ProcessAudit("call contract of destination chain", res));
         return new CommonChainResponse(res);
     }
 
@@ -31,7 +30,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         log.info("[src chain do lock]:\n");
         String res = sendTransaction(req);
-        auditManager.addProcess(id, new ProcessAudit(new Date().toString(), "lock", res));
+        auditManager.addProcess(id, new ProcessAudit("lock", res));
         Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
         Matcher m = p.matcher(req.getArgs());
         String lock_amount = null;
@@ -57,7 +56,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         log.info("[src chain do unlock]:\n");
         String res = sendTransaction(req);
-        auditManager.addProcess(id, new ProcessAudit(new Date().toString(), "unlock", res));
+        auditManager.addProcess(id, new ProcessAudit("unlock", res));
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(105, String.format("源链资产解锁失败,详情：%s", extractInfo("data", res)));
         }
@@ -68,7 +67,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
         log.info("[src chain do rollback]:\n");
         String res = sendTransaction(req);
-        auditManager.addProcess(id, new ProcessAudit(new Date().toString(), "rollback", res));
+        auditManager.addProcess(id, new ProcessAudit("rollback", res));
         auditManager.getHTLCInfo(id).setHtlc_status("状态回滚，不解锁");
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(106, String.format("源链资产回滚失败,详情：%s", extractInfo("data", res)));
