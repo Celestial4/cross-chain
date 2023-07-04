@@ -4,6 +4,7 @@ import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.Group;
 import com.crosschain.datasource.GroupAndChainSource;
 import com.crosschain.exception.OperationException;
+import com.crosschain.exception.SqlException;
 import com.crosschain.exception.UniException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -22,10 +23,15 @@ public class GroupManager {
     private GroupAndChainSource ds;
 
     public void init() {
-        List<Group> groups = ds.getAllGroups();
+        List<Group> groups;
+        try {
+            groups = ds.getAllGroups();
+        } catch (UniException e) {
+            log.error("初始化群组管理器失败：" + e.getErrorMsg());
+            return;
+        }
         for (Group c : groups) {
             this.groups.put(c.getGroupName(), c);
-            log.debug("[group found]: {},{}", c.getGroupName(), c.getMembers());
         }
     }
 
@@ -33,7 +39,7 @@ public class GroupManager {
         return ds.getGroup(groupName);
     }
 
-    public List<Chain> getChains(String[] chainNames) {
+    public List<Chain> getChains(String[] chainNames) throws UniException {
         String allChain = "";
         if (!Objects.isNull(chainNames) && chainNames.length > 0) {
             for (String name : chainNames) {
@@ -54,46 +60,7 @@ public class GroupManager {
         groups.put(group.getGroupName(), group);
         ds.newGroup(group);
 
-        log.info("create group:[{}]", grpName);
-    }
-
-    //解耦，deprecated
-    public int putGroup(String groupName, int status, String... chains) throws UniException {
-        int cnt = 0;
-        List<Chain> allChain = getChains(chains);
-        if (groups.containsKey(groupName)) {
-            //add to existed group
-            Group existedGroup = groups.get(groupName);
-            if (!allChain.isEmpty()) {
-                //update cache
-                existedGroup.addMember(allChain);
-                for (Chain chain : allChain) {
-                    cnt = ds.associate(existedGroup.getGroupId(), chain.getChainId());
-                }
-                log.info("add to group:{}, associated chains:{}", groupName, Arrays.toString(chains));
-                if (allChain.size() != chains.length) {
-                    log.info("add to group, but some of chains not found");
-                }
-            } else {
-                log.info("add to group, but chains:{} not found", (Object) chains);
-            }
-        } else {
-            Group group = new Group();
-            group.setGroupId(UUID.randomUUID().toString());
-            group.setGroupName(groupName);
-            group.setStatus(status);
-
-            if (!allChain.isEmpty()) {
-                group.addMember(allChain);
-            }
-
-            groups.put(group.getGroupName(), group);
-            cnt = ds.newGroup(group);
-            ds.associate(group);
-            log.info(String.format("create group:[%s], associated chains:[%s]", groupName, Arrays.toString(chains)));
-        }
-
-        return cnt;
+        log.info("创建群组{}", grpName);
     }
 
     public void putChain(String chainName, int status) throws UniException {
@@ -102,12 +69,12 @@ public class GroupManager {
         chain.setChainId(chain_id);
         chain.setChainName(chainName);
         chain.setStatus(status);
-
-        log.info("create chain:[{}]", chainName);
         ds.addChain(chain);
+
+        log.info("创建链{}成功", chainName);
     }
 
-    public void updateStatus(int type, String target, int status) throws UniException{
+    public void updateStatus(int type, String target, int status) throws UniException {
 
         switch (type) {
             case 1:
@@ -117,7 +84,7 @@ public class GroupManager {
                 ds.updateChain(target, status);
                 break;
         }
-        log.info("update success!");
+        log.info("更新{}c成功", target);
     }
 
     public void removeTo(String srcGrpName, String desGrpName, String cName) throws UniException {
