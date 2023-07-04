@@ -21,7 +21,6 @@ import java.security.MessageDigest;
 public class TransactionAudit {
     String action;
     Integer status;
-    String channel_id;
     String channel_name;
     String gateway_ids;
 
@@ -50,6 +49,7 @@ public class TransactionAudit {
     Integer volume;
     String behavior_content;
     String behavioral_results;
+    Mechanism mechanism_info;
 
     public static TransactionAudit construct(GroupManager groupManager, AuditManager auditManager, CrossChainRequest req, String transactionRes, String req_id) throws Exception {
         String proof, timestamp, action, status;
@@ -71,7 +71,6 @@ public class TransactionAudit {
 
         Group group = groupManager.getGroup(req.getGroup());
         String grp_name = group.getGroupName();
-        String grp_id = group.getGroupId();
         String gateway_id = SystemInfo.getServiceAddr(SystemInfo.getSelfChainName()) + "," + SystemInfo.getServiceAddr(req.getDesChainRequest().getChainName());
 
         Chain sChain = group.getChain(SystemInfo.getSelfChainName());
@@ -109,7 +108,6 @@ public class TransactionAudit {
         TransactionAudit payload = new TransactionAudit();
         payload.setAction(action);
         payload.setStatus(Integer.parseInt(status));
-        payload.setChannel_id(grp_id);
         payload.setChannel_name(grp_name);
         payload.setGateway_ids(gateway_id);
 

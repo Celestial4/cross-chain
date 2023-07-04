@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HTLCMechanismInfo {
+public class HTLCMechanismInfo implements Mechanism{
     String htlc_lock;
     String htlc_unlock;
     String htlc_status;

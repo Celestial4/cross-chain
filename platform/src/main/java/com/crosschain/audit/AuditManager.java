@@ -24,7 +24,7 @@ public class AuditManager {
 
     private Map<String,CrossChainVo> voMap = new ConcurrentHashMap<>(1);
 
-    private Map<String, FullAuditInfo> cache = new ConcurrentHashMap<>(1);
+    private Map<String, FullAuditInfo> auditionMap = new ConcurrentHashMap<>(1);
 
     public void joinRequest(CrossChainVo request) throws UniException {
         String id = request.getRequest_id();
@@ -32,7 +32,7 @@ public class AuditManager {
             voMap.put(id, request);
             FullAuditInfo ai = new FullAuditInfo();
             ai.setRequest_id(id);
-            cache.put(id, ai);
+            auditionMap.put(id, ai);
         } else {
             throw new OperationException(String.format("%s跨链请求已经存在", id));
         }
@@ -40,43 +40,46 @@ public class AuditManager {
 
     public void completeRequest(String id) {
         voMap.remove(id);
-        cache.remove(id);
+        auditionMap.remove(id);
     }
 
     public void setMechanism(String id,String m) {
-        FullAuditInfo ai = cache.get(id);
+        FullAuditInfo ai = auditionMap.get(id);
         ai.setCross_chain_mechanism(m);
     }
 
     public void addProcess(String id, ProcessAudit p) {
-        List<ProcessAudit> l = cache.get(id).getProcess();
+        List<ProcessAudit> l = auditionMap.get(id).getProcess();
         l.add(p);
     }
 
     public void addTransactionInfo(String id, TransactionAudit t) {
-        cache.get(id).setTransaction_result(t);
+        //获取预设好的机制信息
+        TransactionAudit transactionAudit = auditionMap.get(id).getTransaction_result();
+        t.setMechanism_info(transactionAudit.getMechanism_info());
+        auditionMap.get(id).setTransaction_result(t);
     }
 
     public String show(){
         String res = "";
-        res += cache.keySet();
+        res += auditionMap.keySet();
         return res;
     }
 
     public void addHTLCInfo(String id, HTLCMechanismInfo h) {
-        cache.get(id).setMechanism_info1(h);
+        auditionMap.get(id).getTransaction_result().setMechanism_info(h);
     }
 
     public HTLCMechanismInfo getHTLCInfo(String id) {
-        return cache.get(id).getMechanism_info1();
+        return (HTLCMechanismInfo) auditionMap.get(id).getTransaction_result().getMechanism_info();
     }
 
     public void addNotaryInfo(String id, NotaryMechanismInfo n) {
-        cache.get(id).setMechanism_info2(n);
+        auditionMap.get(id).getTransaction_result().setMechanism_info(n);
     }
 
     public void addDpkInfo(String id, DPKMechanismInfo d) {
-        cache.get(id).setMechanism_info3(d);
+        auditionMap.get(id).getTransaction_result().setMechanism_info(d);
     }
 
     public String getRequestIngredient(String id) throws UniException {
@@ -110,7 +113,7 @@ public class AuditManager {
     }
 
     public void uploadAuditInfo(String id) throws CrossChainException {
-        FullAuditInfo entity = cache.get(id);
+        FullAuditInfo entity = auditionMap.get(id);
         String payload = entity.auditInfo();
         log.info("[transaction upload data]:{}", payload);
         // 上报

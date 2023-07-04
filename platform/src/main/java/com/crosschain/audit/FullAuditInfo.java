@@ -13,9 +13,9 @@ public class FullAuditInfo implements IAuditEntity {
     String cross_chain_mechanism;
     List<ProcessAudit> process = new LinkedList<>();
     TransactionAudit transaction_result = new TransactionAudit();
-    HTLCMechanismInfo mechanism_info1 = new HTLCMechanismInfo();
-    NotaryMechanismInfo mechanism_info2 = new NotaryMechanismInfo();
-    DPKMechanismInfo mechanism_info3 = new DPKMechanismInfo();
+//    HTLCMechanismInfo mechanism_info1 = new HTLCMechanismInfo();
+//    NotaryMechanismInfo mechanism_info2 = new NotaryMechanismInfo();
+//    DPKMechanismInfo mechanism_info3 = new DPKMechanismInfo();
 
     @Override
     public String auditInfo() {
