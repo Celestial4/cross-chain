@@ -4,19 +4,15 @@ import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.Group;
 import com.crosschain.exception.SqlException;
 import com.crosschain.exception.UniException;
-import com.sun.deploy.net.socket.UnixDomainSocketException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.ejb.access.EjbAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.nio.channels.Channel;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 @Component
 public class GroupAndChainSource {
