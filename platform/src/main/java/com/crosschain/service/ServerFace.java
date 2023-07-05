@@ -171,7 +171,7 @@ public class ServerFace {
         return new UniResponse(200, "success", String.format("群组%s添加成功", groupName)).get();
     }
 
-    @GetMapping("/ping")
+    @PostMapping("/ping")
     @ResponseBody
     public String ping() {
         UniResponse uniResponse = new UniResponse(200, "success", "pong");
@@ -204,14 +204,14 @@ public class ServerFace {
         return new UniResponse(200, "success", "操作成功").get();
     }
 
-    @GetMapping("/cpu")
+    @PostMapping("/cpu")
     @ResponseBody
     public String getCpuInfo() {
         String cpuInfo = STATCSManager.getCpuInfo();
         return new UniResponse(200,"success",cpuInfo).get();
     }
 
-    @GetMapping("/mem")
+    @PostMapping("/mem")
     @ResponseBody
     public String getMemInfo() {
         String memoryInfo = STATCSManager.getMemoryInfo();
