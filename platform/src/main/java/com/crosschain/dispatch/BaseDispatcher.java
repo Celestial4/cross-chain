@@ -76,7 +76,6 @@ public class BaseDispatcher implements Dispatcher {
         }
     }
 
-
     @Override
     public void completeTask(String id) {
         auditManager.completeRequest(id);
@@ -98,54 +97,4 @@ public class BaseDispatcher implements Dispatcher {
             throw new CrossChainException(500,String.format("合约%s执行异常：%s",req.getChainName(),e.getMessage()));
         }
     }
-
-//    protected void processAudit(CrossChainRequest req, String msgRtd) throws Exception {
-//        String proof, timestamp, action, status;
-//
-//        proof = extractInfo("hash", msgRtd);
-//        timestamp = extractInfo("time", msgRtd);
-//        action = extractInfo("action", msgRtd);
-//        status = extractInfo("status", msgRtd);
-//
-//        String time = new Date(Long.parseLong(timestamp)).toString();
-//        String receipt = "1".equals(status) ? "成功" : "失败";
-//
-//        Group group = groupManager.getGroup(req.getGroup());
-//        String grp_name = group.getGroupName();
-//        String grp_id = group.getGroupId();
-//        String gateway_id = "gateway-" + SystemInfo.getSelfChainName();
-//
-//        Chain sChain = group.getChain(req.getSrcChainRequest().getChainName());
-//        String src_chain_id = sChain.getChainId();
-//        String src_contract = req.getSrcChainRequest().getContract();
-//        String src_chain_name = sChain.getChainName();
-//
-//        Chain dChain = group.getChain(req.getDesChainRequest().getChainName());
-//        String des_chain_id = dChain.getChainId();
-//        String des_contract = req.getDesChainRequest().getContract();
-//        String des_chain_name = dChain.getChainName();
-//
-//
-//        String transaction_id_ingredient = auditManager.getRequestIngredient() + timestamp;
-//        MessageDigest digest = MessageDigest.getInstance("sha-256");
-//        digest.update(transaction_id_ingredient.getBytes(StandardCharsets.UTF_8));
-//        StringBuilder transaction_id = new StringBuilder();
-//        byte[] bytes = digest.digest();
-//        for (byte b : bytes) {
-//            transaction_id.append(String.format("%x", b));
-//        }
-//
-//        String request_user_name = auditManager.getRequestUser();
-//        String request_user_id = CrossChainUtils.hash(request_user_name.getBytes(StandardCharsets.UTF_8));
-//        String target_user_name = auditManager.getTargetUser();
-//        String target_user_id = CrossChainUtils.hash(target_user_name.getBytes(StandardCharsets.UTF_8));
-//
-//        String dataHash = CrossChainUtils.hash(msgRtd.getBytes(StandardCharsets.UTF_8));
-//        int volume = msgRtd.getBytes(StandardCharsets.UTF_8).length / 8;
-//        String behaviorContent = action;
-//        String behavioralResults = status;
-//
-//        TransactionAudit payload = null;
-//        auditManager.uploadAuditInfo(null);
-//    }
 }

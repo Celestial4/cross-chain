@@ -52,6 +52,7 @@ public class ServerFace {
 
         try {
             constructRequest(crossChainVo, src, des);
+            //设置请求id
             auditManager.joinRequest(crossChainVo);
 
             Dispatcher dispatcher;

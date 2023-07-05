@@ -4,6 +4,7 @@ import com.crosschain.audit.AuditManager;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.exception.UniException;
+import com.crosschain.service.response.Response;
 import com.crosschain.service.response.entity.ErrorServiceResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,12 +21,12 @@ public class Task implements Runnable{
     @Override
     public void run() {
         try {
-            dispatcher.process(crossChainRequest);
+            Response response = dispatcher.process(crossChainRequest);
+            log.info("complete task{},result: {}",crossChainRequest.getRequestId(),response.get());
         } catch (Exception e) {
             log.error(new ErrorServiceResponse((UniException) e).get());
-            e.printStackTrace();
         }finally {
-            log.info("clear task:{}",auditManager.show());
+            log.info("all task:{},now cleaning current completed task...",auditManager.show());
             dispatcher.completeTask(crossChainRequest.getRequestId());
             log.info("after clearing:{}", auditManager.show());
         }

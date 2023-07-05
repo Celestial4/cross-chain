@@ -5,7 +5,6 @@ import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.TransactionAudit;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.entity.CommonChainResponse;
-import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.exception.CrossChainException;
@@ -80,8 +79,6 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         String requestId = request.getRequestId();
 
         auditManager.setMechanism(requestId, "1");
-
-        Group group = groupManager.getGroup(request.getGroup());
 
         CrossChainServiceResponse response = new CrossChainServiceResponse();
 
