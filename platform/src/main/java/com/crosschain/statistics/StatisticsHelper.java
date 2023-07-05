@@ -103,8 +103,8 @@ public class StatisticsHelper {
     public static void printMemory(GlobalMemory memory) {
         long memoryTotal = memory.getTotal();
         long available = memory.getAvailable();
-        double usage = (memoryTotal - available) / (double) available;
-        oshi.add(String.format("{\"total\":%d,\"available\":%d,\"usage\":%f}", memoryTotal, available, usage));
+        double usage = (memoryTotal - available) / (double) available * 100;
+        oshi.add(String.format("{\"total\":%d,\"available\":%d,\"usage\":%f%%}", memoryTotal, available, usage));
     }
 
     public static void printCpu(CentralProcessor processor) {
