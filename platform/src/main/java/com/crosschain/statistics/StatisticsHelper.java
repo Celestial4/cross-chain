@@ -1,15 +1,20 @@
 package com.crosschain.statistics;
 
-import oshi.hardware.*;
+import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
 import oshi.hardware.CentralProcessor.ProcessorCache;
+import oshi.hardware.ComputerSystem;
+import oshi.hardware.GlobalMemory;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OSSession;
 import oshi.software.os.OperatingSystem;
 import oshi.util.FormatUtil;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class StatisticsHelper {
@@ -103,14 +108,16 @@ public class StatisticsHelper {
     public static void printMemory(GlobalMemory memory) {
         long memoryTotal = memory.getTotal();
         long available = memory.getAvailable();
-        double usage = (memoryTotal - available) / (double) available * 100;
-        oshi.add(String.format("{\"total\":%d,\"available\":%d,\"usage\":%f%%}", memoryTotal, available, usage));
+        Double total_t = Double.valueOf(Long.toString(memoryTotal));
+        Double total_a = Double.valueOf(Long.toString(available));
+        double usage_d = (total_t-total_a)/total_t;
+        oshi.add(String.format("{\"total\":%d,\"used\":%d,\"usage\":%.2f%%}", memoryTotal, memoryTotal - available, usage_d));
     }
 
     public static void printCpu(CentralProcessor processor) {
         double usage = processor.getSystemCpuLoad(1000);
         int cnt = processor.getPhysicalProcessorCount();
-        oshi.add(String.format("{\"total\":%d,\"used\":%d,\"usage\":%f%%}", cnt, cnt, usage * 100));
+        oshi.add(String.format("{\"total\":%d,\"used\":%d,\"usage\":%.2f%%}", cnt, cnt, usage * 100));
     }
 
     public static void printProcesses(OperatingSystem os, GlobalMemory memory) {
