@@ -10,16 +10,16 @@ public class STATCSManager {
     static OperatingSystem os = si.getOperatingSystem();
 
     public static String getCpuInfo() {
-        getOs();
-        getComputerInfo();
+//        getOs();
+//        getComputerInfo();
         StatisticsHelper.printCpu(hal.getProcessor());
         //StatisticsHelper.printProcessor(hal.getProcessor());
         return StatisticsHelper.printInfo();
     }
 
     public static String getMemoryInfo() {
-        getOs();
-        getComputerInfo();
+//        getOs();
+//        getComputerInfo();
         StatisticsHelper.printMemory(hal.getMemory());
         return StatisticsHelper.printInfo();
     }

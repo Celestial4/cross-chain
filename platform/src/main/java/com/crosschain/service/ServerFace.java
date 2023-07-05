@@ -181,7 +181,7 @@ public class ServerFace {
     @PostMapping("/move")
     @ResponseBody
     public String move(@RequestParam("src_group_n") String sr_cnl_n,
-                       @RequestParam(value = "des_group_n") String des_grp_n,
+                       @RequestParam("des_group_n") String des_grp_n,
                        @RequestParam("chain_n") String chain_n) {
         try {
             groupManager.removeTo(sr_cnl_n, des_grp_n, chain_n);

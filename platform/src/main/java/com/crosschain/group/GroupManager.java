@@ -4,7 +4,6 @@ import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.Group;
 import com.crosschain.datasource.GroupAndChainSource;
 import com.crosschain.exception.OperationException;
-import com.crosschain.exception.SqlException;
 import com.crosschain.exception.UniException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -35,7 +34,7 @@ public class GroupManager {
         }
     }
 
-    public Group getGroup(String groupName) throws Exception {
+    public Group getGroup(String groupName) throws UniException {
         return ds.getGroup(groupName);
     }
 
@@ -49,6 +48,10 @@ public class GroupManager {
             return ds.getChains(allChain);
         }
         return Collections.emptyList();
+    }
+
+    public Chain getChain(String chainName) throws UniException {
+        return ds.getChain(chainName);
     }
 
     public void putGroup0(String grpName, int status) throws UniException {
@@ -69,7 +72,7 @@ public class GroupManager {
         chain.setChainId(chain_id);
         chain.setChainName(chainName);
         chain.setStatus(status);
-        ds.addChain(chain);
+        ds.addChain(Collections.singletonList(chain));
 
         log.info("创建链{}成功", chainName);
     }
@@ -78,18 +81,28 @@ public class GroupManager {
 
         switch (type) {
             case 1:
-                ds.updateGroup(target, status);
+                Group group = getGroup(target);
+                if (Objects.nonNull(group)) {
+                    ds.updateGroup(target, status);
+                } else {
+                    throw new OperationException(String.format("%s群组不存在",target));
+                }
                 break;
             case 2:
-                ds.updateChain(target, status);
+                Chain chain = getChain(target);
+                if (Objects.nonNull(chain)) {
+                    ds.updateChain(target, status);
+                } else {
+                    throw new OperationException(String.format("%s链不存在",target));
+                }
                 break;
         }
-        log.info("更新{}c成功", target);
+        log.info("更新{}成功", target);
     }
 
     public void removeTo(String srcGrpName, String desGrpName, String cName) throws UniException {
         if (Strings.isEmpty(desGrpName) && Strings.isEmpty(srcGrpName)) {
-            log.info("operation failed! arguments error");
+            log.info("目标群组和源群组参数为空");
             throw new OperationException("缺少需要操作的群组参数，请查阅操作手册");
         }
         if (Strings.isEmpty(desGrpName)) {
@@ -118,12 +131,14 @@ public class GroupManager {
                     String des_grp_id = des_grp.getGroupId();
                     ds.associate(des_grp_id, srcChain.getChainId());
                     log.info("add chain[{}] to [{}] successfully!", cName, desGrpName);
+                } else {
+                    log.info("add chain[{}] to [{}] failed! chain not found", cName, desGrpName);
+                    throw new OperationException(String.format("%s链不存在，请先添加链", cName));
                 }
-                log.info("add chain[{}] to [{}] failed! chain not found", cName, desGrpName);
-                throw new OperationException(String.format("%s链不存在，请先添加链", cName));
+            } else {
+                log.info("add chain[{}] to [{}] failed! group not found", cName, desGrpName);
+                throw new OperationException(String.format("%s群组不存在，请先添加群组", srcGrpName));
             }
-            log.info("add chain[{}] to [{}] failed! group not found", cName, desGrpName);
-            throw new OperationException(String.format("%s群组不存在，请先添加群组", srcGrpName));
         } else {
             //remove from srcGroup and then add to desGroup
             if (groups.containsKey(srcGrpName) && groups.containsKey(desGrpName)) {
@@ -136,10 +151,12 @@ public class GroupManager {
                     ds.deAssociate(src_cnl_id, srcChain.getChainId());
                     ds.associate(des_cnl_id, srcChain.getChainId());
                     log.info("remove chain[{}] from [{}] to [{}] successfully!", cName, srcGrpName, desGrpName);
+                } else {
+                    throw new OperationException(String.format("%s链不在%s群组中", cName, srcGrpName));
                 }
-                throw new OperationException(String.format("%s链不在%s群组中", cName, srcGrpName));
+            } else {
+                throw new OperationException(String.format("%s或者%s群组不存在，请先添加群组", srcGrpName, desGrpName));
             }
-            throw new OperationException(String.format("%s或者%s群组不存在，请先添加群组", srcGrpName, desGrpName));
         }
     }
 }

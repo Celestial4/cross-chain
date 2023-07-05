@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -31,8 +30,9 @@ public class GroupAndChainSource {
                 throw new SqlException("跨链群组不存在");
             }
         } catch (Exception e) {
-            logger.error("获取群组{}失败：" + e.getMessage(), channelName);
-            throw new SqlException(e.getMessage());
+            String ErrorMsg = String.format("群组%s不存在：%s", channelName, e.getMessage());
+            logger.error(ErrorMsg);
+            throw new SqlException(ErrorMsg);
         }
         c.addMember(getRelatedChains(channelName));
         return c;
@@ -45,7 +45,7 @@ public class GroupAndChainSource {
             groups = sql.query("select * from channel", Mappers.channelRowMapper);
         } catch (DataAccessException e) {
             logger.error("获取所有群组失败：" + e.getMessage());
-            throw new SqlException(e.getMessage());
+            throw new SqlException("获取所有群组失败：" + e.getMessage());
         }
         for (Group c : groups) {
             c.addMember(getRelatedChains(c.getGroupName()));
@@ -60,10 +60,9 @@ public class GroupAndChainSource {
             r = sql.query(stamt, Mappers.chainRowMapper);
 
         } catch (Exception e) {
-            logger.error("获取链{}失败：" + e.getMessage(), chainNames);
+            logger.error("获取链{}失败：{}", chainNames, e.getMessage());
             throw new SqlException(e.getMessage());
         }
-        logger.debug("[query chains]: {},{}", r.size(), Arrays.toString(r.toArray()));
         return r;
     }
 
@@ -72,21 +71,20 @@ public class GroupAndChainSource {
         try {
             list = sql.query("select chain_id,chain_name,chain_status,chain_type from (select t1.channel_name name,t3.*  from channel t1,channel_chain t2,chain t3 where t1.channel_id=t2.channel_id and t2.chain_id=t3.chain_id) t4 where name=?", Mappers.chainRowMapper, channel);
         } catch (DataAccessException e) {
-            logger.error("获取{}相关链失败：" + e.getMessage(), channel);
+            logger.error("获取{}相关链失败：{}", channel, e.getMessage());
             throw new SqlException(e.getMessage());
         }
         return list;
     }
 
-    public int newGroup(Group group) throws UniException {
-        int cnt = 0;
+    public void newGroup(Group group) throws UniException {
         try {
-            cnt = sql.update("insert into channel values(?,?,?)", group.getGroupId(), group.getGroupName(), group.getStatus());
+            sql.update("insert into channel values(?,?,?)", group.getGroupId(), group.getGroupName(), group.getStatus());
         } catch (Exception e) {
-            logger.error("添加群组{}失败：" + e.getMessage(), group);
-            throw new SqlException(e.getMessage());
+            String msg = String.format("添加群组%s失败：%s", group, e.getMessage());
+            logger.error(msg);
+            throw new SqlException(msg);
         }
-        return cnt;
     }
 
     /**
@@ -100,22 +98,21 @@ public class GroupAndChainSource {
                 sql.update("insert into channel_chain values(?,?)", group.getGroupId(), chain.getChainId());
             }
         } catch (Exception e) {
-            logger.error("关联群组{}失败：" + e.getMessage(), group);
+            logger.error("关联群组{}失败：{}", group, e.getMessage());
             throw new SqlException(e.getMessage());
         }
     }
 
-    public int addChain(Chain... chain) throws UniException {
-        int cnt = 0;
+    public void addChain(List<Chain> chain) throws UniException {
         try {
             for (Chain c : chain) {
-                cnt += sql.update("insert into chain values(?,?,?,?)", c.getChainId(), c.getChainName(), c.getStatus(), c.getChainType());
+                sql.update("insert into chain values(?,?,?,?)", c.getChainId(), c.getChainName(), c.getStatus(), c.getChainType());
             }
         } catch (Exception e) {
-            logger.error("添加链{}失败：" + e.getMessage(), chain);
-            throw new SqlException(e.getMessage());
+            String msg = String.format("添加链%s失败：%s", chain, e.getMessage());
+            logger.error(msg);
+            throw new SqlException(msg);
         }
-        return cnt;
     }
 
     /**
@@ -124,23 +121,23 @@ public class GroupAndChainSource {
      * @param channel_id 通道id
      * @param chain_id   链id
      */
-    public int associate(String channel_id, String chain_id) throws UniException {
-        int cnt = 0;
+    public void associate(String channel_id, String chain_id) throws UniException {
         try {
-            cnt = sql.update("insert into channel_chain values(?,?)", channel_id, chain_id);
+            sql.update("insert into channel_chain values(?,?)", channel_id, chain_id);
         } catch (Exception e) {
-            logger.error("关联群组{}和链{}失败：" + e.getMessage(), channel_id, chain_id);
-            throw new SqlException(e.getMessage());
+            String msg = String.format("添加链%s到群组%s失败: %s", channel_id, chain_id, e.getMessage());
+            logger.error(msg);
+            throw new SqlException(msg);
         }
-        return cnt;
     }
 
     public void deAssociate(String channel_id, String chain_id) throws UniException {
         try {
             sql.update("delete from channel_chain where channel_id=? and chain_id=?", channel_id, chain_id);
         } catch (DataAccessException e) {
-            logger.error("去关联群组{},链{}失败：" + e.getMessage(), channel_id, chain_id);
-            throw new SqlException(e.getMessage());
+            String msg = String.format("群组%s移除链%s失败: %s", channel_id, chain_id, e.getMessage());
+            logger.error(msg);
+            throw new SqlException(msg);
         }
     }
 
@@ -148,17 +145,19 @@ public class GroupAndChainSource {
         try {
             sql.update("update channel set channel_status=? where channel_name=?", status, cnl_name);
         } catch (Exception e) {
-            logger.error("更新群组{}失败：" + e.getMessage(), cnl_name);
-            throw new SqlException(e.getMessage());
+            String msg = String.format("更新群组%s失败：%s", cnl_name, e.getMessage());
+            logger.error(msg);
+            throw new SqlException(msg);
         }
     }
 
     public void updateChain(String c_name, int status) throws UniException {
         try {
             sql.update("update chain set chain_status=? where chain_name=?", status, c_name);
-        } catch (DataAccessException e) {
-            logger.error("更新链{}失败：" + e.getMessage(), c_name);
-            throw new SqlException(e.getMessage());
+        } catch (Exception e) {
+            String msg = String.format("更新链%s失败：%s", c_name, e.getMessage());
+            logger.error(msg);
+            throw new SqlException(msg);
         }
     }
 
@@ -166,9 +165,10 @@ public class GroupAndChainSource {
         Chain chain;
         try {
             chain = sql.queryForObject("select * from chain where chain_name=?", Mappers.chainRowMapper, cName);
-        } catch (DataAccessException e) {
-            logger.error("获取链{}失败：" + e.getMessage(), cName);
-            throw new SqlException(e.getMessage());
+        } catch (Exception e) {
+            String ErrorMsg = String.format("链%s不存在：%s", cName, e.getMessage());
+            logger.error(ErrorMsg);
+            throw new SqlException(ErrorMsg);
         }
         return chain;
     }

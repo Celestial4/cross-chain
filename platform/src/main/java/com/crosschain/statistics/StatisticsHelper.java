@@ -101,27 +101,14 @@ public class StatisticsHelper {
     }
 
     public static void printMemory(GlobalMemory memory) {
-        oshi.add("Physical Memory: \n " + memory.toString());
-        VirtualMemory vm = memory.getVirtualMemory();
-        oshi.add("Virtual Memory: \n " + vm.toString());
-        List<PhysicalMemory> pmList = memory.getPhysicalMemory();
-        if (!pmList.isEmpty()) {
-            oshi.add("Physical Memory: ");
-            for (PhysicalMemory pm : pmList) {
-                oshi.add(" " + pm.toString());
-            }
-        }
+        long memoryTotal = memory.getTotal();
+        long available = memory.getAvailable();
+        oshi.add(String.format("{\"total\":%d,\"available\":%d}", memoryTotal, available));
     }
 
     public static void printCpu(CentralProcessor processor) {
-        long[] prevTicks = processor.getSystemCpuLoadTicks();
-        long[][] prevProcTicks = processor.getProcessorCpuLoadTicks();
-        oshi.add("CPU, IOWait, and IRQ ticks @ 0 sec:" + Arrays.toString(prevTicks));
-        oshi.add(String.format("CPU load: %.1f%%", processor.getSystemCpuLoadBetweenTicks(prevTicks) * 100));
-        double[] loadAverage = processor.getSystemLoadAverage(3);
-        oshi.add("CPU load averages:" + (loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0]))
-                + (loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1]))
-                + (loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])));
+        double systemCpuLoad = processor.getSystemCpuLoad(1000);
+        oshi.add(String.format("{\"cpu_usage\":%f%%}",systemCpuLoad*100));
     }
 
     public static void printProcesses(OperatingSystem os, GlobalMemory memory) {
