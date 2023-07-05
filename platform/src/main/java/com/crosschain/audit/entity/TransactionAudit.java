@@ -60,9 +60,9 @@ public class TransactionAudit {
             action = CrossChainUtils.extractInfo("action", transactionRes);
             status = CrossChainUtils.extractInfo("status", transactionRes);
         } catch (UniException e) {
-            proof = "rollback";
+            proof = "error";
             timestamp = "0";
-            action = "2";
+            action = "";
             status = "-1";
         }
 

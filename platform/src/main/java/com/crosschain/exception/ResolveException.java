@@ -1,12 +1,12 @@
 package com.crosschain.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@AllArgsConstructor
-@NoArgsConstructor
-public class ResolveException extends UniException{
+public class ResolveException extends UniException {
     protected String errorField;
+
+    public ResolveException(String message) {
+        super(message);
+        errorField = message;
+    }
 
     @Override
     public Integer getErrorCode() {

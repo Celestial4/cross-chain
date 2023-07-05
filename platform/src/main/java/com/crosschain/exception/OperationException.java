@@ -1,12 +1,12 @@
 package com.crosschain.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@AllArgsConstructor
-@NoArgsConstructor
 public class OperationException extends UniException {
     String msg;
+
+    public OperationException(String message) {
+        super(message);
+        msg = message;
+    }
 
     @Override
     public Integer getErrorCode() {

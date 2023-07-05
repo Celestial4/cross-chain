@@ -1,14 +1,15 @@
 package com.crosschain.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-@AllArgsConstructor
 public class CrossChainException extends UniException {
     private Integer code;
 
     private String message;
+
+    public CrossChainException(int i, String msg) {
+        super(msg);
+        code = i;
+        message = msg;
+    }
 
     @Override
     public Integer getErrorCode() {
