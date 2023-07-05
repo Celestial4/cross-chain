@@ -71,7 +71,7 @@ public class TransactionAudit {
 
         Group group = groupManager.getGroup(req.getGroup());
         String grp_name = group.getGroupName();
-        String gateway_id = SystemInfo.getServiceAddr(SystemInfo.getSelfChainName()) + "," + SystemInfo.getServiceAddr(req.getDesChainRequest().getChainName());
+        String gateway_id = SystemInfo.getGatewayAddr(SystemInfo.getSelfChainName()) + "," + SystemInfo.getGatewayAddr(req.getDesChainRequest().getChainName());
 
         Chain sChain = group.getChain(SystemInfo.getSelfChainName());
         String src_chain_id = sChain.getChainId();

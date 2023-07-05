@@ -28,6 +28,14 @@ public class SystemInfo {
         return serviceAddr;
     }
 
+    public static String getGatewayAddr(String chainName) throws CrossChainException {
+        String gatewayAddr = maps.get("gateway-"+ chainName);
+        if (Objects.isNull(gatewayAddr)) {
+            throw new CrossChainException(501,String.format("找不到跨链网关信息:%s",chainName));
+        }
+        return gatewayAddr;
+    }
+
     public static String getSelfChainName() throws Exception{
         if (Strings.isEmpty(selfChainName)) {
             throw new CrossChainException(503, "请检查conf/config.properties配置文件");
