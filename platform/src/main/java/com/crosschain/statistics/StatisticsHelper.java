@@ -26,7 +26,7 @@ public class StatisticsHelper {
         oshi.clear();
         return output.toString();
     }
-    
+
     public static void printOperatingSystem(final OperatingSystem os) {
         oshi.add(String.valueOf(os));
         oshi.add("Booted: " + Instant.ofEpochSecond(os.getSystemBootTime()));
@@ -103,12 +103,14 @@ public class StatisticsHelper {
     public static void printMemory(GlobalMemory memory) {
         long memoryTotal = memory.getTotal();
         long available = memory.getAvailable();
-        oshi.add(String.format("{\"total\":%d,\"available\":%d}", memoryTotal, available));
+        double usage = (memoryTotal - available) / (double) available;
+        oshi.add(String.format("{\"total\":%d,\"available\":%d,\"usage\":%f}", memoryTotal, available, usage));
     }
 
     public static void printCpu(CentralProcessor processor) {
-        double systemCpuLoad = processor.getSystemCpuLoad(1000);
-        oshi.add(String.format("{\"cpu_usage\":%f%%}",systemCpuLoad*100));
+        double usage = processor.getSystemCpuLoad(1000);
+        int cnt = processor.getPhysicalProcessorCount();
+        oshi.add(String.format("{\"total\":%d,\"used\":%d,\"usage\":%f%%}", cnt, cnt, usage * 100));
     }
 
     public static void printProcesses(OperatingSystem os, GlobalMemory memory) {
