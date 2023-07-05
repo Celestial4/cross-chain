@@ -66,12 +66,13 @@ public class GroupManager {
         log.info("创建群组{}", grpName);
     }
 
-    public void putChain(String chainName, int status) throws UniException {
+    public void putChain(String chainName, int status, String chainType) throws UniException {
         String chain_id = UUID.randomUUID().toString();
         Chain chain = new Chain();
         chain.setChainId(chain_id);
         chain.setChainName(chainName);
         chain.setStatus(status);
+        chain.setChainType(chainType);
         ds.addChain(Collections.singletonList(chain));
 
         log.info("创建链{}成功", chainName);
@@ -85,7 +86,7 @@ public class GroupManager {
                 if (Objects.nonNull(group)) {
                     ds.updateGroup(target, status);
                 } else {
-                    throw new OperationException(String.format("%s群组不存在",target));
+                    throw new OperationException(String.format("%s群组不存在", target));
                 }
                 break;
             case 2:
@@ -93,7 +94,7 @@ public class GroupManager {
                 if (Objects.nonNull(chain)) {
                     ds.updateChain(target, status);
                 } else {
-                    throw new OperationException(String.format("%s链不存在",target));
+                    throw new OperationException(String.format("%s链不存在", target));
                 }
                 break;
         }

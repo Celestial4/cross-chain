@@ -56,7 +56,7 @@ public class ServerFace {
             auditManager.joinRequest(crossChainVo);
 
             Dispatcher dispatcher;
-            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(),crossChainVo.getRequest_id());
+            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(), crossChainVo.getRequest_id());
             log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{},{}", des.getChainName(), des.getContract(), des.getFunction(), des.getArgs(), src.getChainName(), src.getContract(), src.getFunction(), src.getArgs());
 
             //鉴权
@@ -105,7 +105,7 @@ public class ServerFace {
         try {
             constructRequest(crossChainVo, src, des);
             Dispatcher dispatcher;
-            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(),crossChainVo.getRequest_id());
+            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(), crossChainVo.getRequest_id());
 
 
             filter.doFilter(crossChainVo);
@@ -131,7 +131,7 @@ public class ServerFace {
             constructRequest(crossChainVo, src, des);
 
             Dispatcher dispatcher;
-            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(),crossChainVo.getRequest_id());
+            CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(), crossChainVo.getRequest_id());
 
 
             filter.doFilter(crossChainVo);
@@ -150,9 +150,10 @@ public class ServerFace {
     @PostMapping("/add_chain")
     @ResponseBody
     public String addChain(@RequestParam("chain_name") String chainName,
-                           @RequestParam(value = "chain_status", defaultValue = "0") int status) {
+                           @RequestParam(value = "chain_status", defaultValue = "0") int status,
+                           @RequestParam("chain_type") String chainType) {
         try {
-            groupManager.putChain(chainName, status);
+            groupManager.putChain(chainName, status, chainType);
 
         } catch (UniException e) {
             return new ErrorServiceResponse(e).get();
@@ -209,14 +210,14 @@ public class ServerFace {
     @ResponseBody
     public String getCpuInfo() {
         String cpuInfo = STATCSManager.getCpuInfo();
-        return new UniResponse(200,"success",cpuInfo).get();
+        return new UniResponse(200, "success", cpuInfo).get();
     }
 
     @PostMapping("/mem")
     @ResponseBody
     public String getMemInfo() {
         String memoryInfo = STATCSManager.getMemoryInfo();
-        return new UniResponse(200,"success",memoryInfo).get();
+        return new UniResponse(200, "success", memoryInfo).get();
     }
 
     private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) throws Exception {
