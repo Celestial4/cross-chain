@@ -20,8 +20,18 @@ public class EDispatcher extends OtherDispatcherBase {
 
     @Override
     protected void setProcessInfo(String req_id, String result) {
-
-        auditManager.addProcess(req_id, new ProcessAudit("notary", result));
+        ProcessAudit processAudit = new ProcessAudit();
+        try {
+            processAudit.setProcess_log("notary");
+            processAudit.setProcess_result(result);
+            String na_time = extractInfo("na_time", result);
+            processAudit.setProcess_time(na_time);
+        } catch (Exception e) {
+            //do nothing
+            log.debug("获取公证人处理过程异常：" + e.getMessage());
+        } finally {
+            auditManager.addProcess(req_id, processAudit);
+        }
     }
 
     @Override
@@ -34,14 +44,19 @@ public class EDispatcher extends OtherDispatcherBase {
             String na_choice = extractInfo("na_choice", result);
             notaryMechanismInfo.setNa_choice(na_choice);
             notaryMechanismInfo.setNa_id(na_id);
-            auditManager.addNotaryInfo(requestId, notaryMechanismInfo);
         } catch (Exception e) {
-            String msg = String.format("设置公证人组模式机制信息失败：%s", e.getMessage());
-            log.error(msg);
-            notaryMechanismInfo.setNa_choice("error");
-            notaryMechanismInfo.setNa_id("null");
+            //do nothing
+            log.debug("获取公证人机制信息异常：" + e.getMessage());
+        } finally {
             auditManager.addNotaryInfo(requestId, notaryMechanismInfo);
-            throw new CrossChainException(700, msg);
+        }
+    }
+
+    @Override
+    protected void finishCrosschain(String result) throws Exception {
+        if (!extractInfo("status", result).equals("1")) {
+            String errorInfo = extractInfo("data", result);
+            throw new CrossChainException(700, "公证人跨链失败：" + errorInfo);
         }
     }
 }

@@ -24,7 +24,4 @@ public class BasicCrossChainDispatcherConfig {
         dispatcher.setAuditManager(auditManager);
         return dispatcher;
     }
-
-    //todo 添加其他通信协议的dispatcher
-
 }

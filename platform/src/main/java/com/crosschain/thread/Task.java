@@ -22,7 +22,7 @@ public class Task implements Runnable{
     public void run() {
         try {
             Response response = dispatcher.process(crossChainRequest);
-            log.info("complete task{},result: {}",crossChainRequest.getRequestId(),response.get());
+            log.info("complete task:{},result: {}",crossChainRequest.getRequestId(),response.get());
         } catch (Exception e) {
             log.error(new ErrorServiceResponse((UniException) e).get());
         }finally {

@@ -19,36 +19,36 @@ import java.security.MessageDigest;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionAudit {
-    String action;
+    String action = "";
     Integer status;
-    String channel_name;
-    String gateway_ids;
+    String channel_name = "";
+    String gateway_ids = "";
 
-    String request_user_id;
-    String request_user;
-    String target_user_id;
-    String target_user;
+    String request_user_id = "";
+    String request_user = "";
+    String target_user_id = "";
+    String target_user = "";
 
-    String source_app_chain_contract;
-    String source_app_chain_id;
-    String source_app_chain_service;
-    String source_app_chain_type;
-    String target_app_chain_contract;
-    String target_app_chain_id;
+    String source_app_chain_contract = "";
+    String source_app_chain_id = "";
+    String source_app_chain_service = "";
+    String source_app_chain_type = "";
+    String target_app_chain_contract = "";
+    String target_app_chain_id = "";
     //链名
-    String target_app_chain_service;
+    String target_app_chain_service = "";
     //链类型
-    String target_app_chain_type;
+    String target_app_chain_type = "";
 
-    String transaction_id;
-    String transaction_proof;
-    String transaction_receipt;
-    String transaction_time;
+    String transaction_id = "";
+    String transaction_proof = "";
+    String transaction_receipt = "";
+    String transaction_time = "";
 
-    String data_hash;
+    String data_hash = "";
     Integer volume;
-    String behavior_content;
-    String behavioral_results;
+    String behavior_content = "";
+    String behavioral_results = "";
     Mechanism mechanism_info;
 
     public static TransactionAudit construct(GroupManager groupManager, AuditManager auditManager, CrossChainRequest req, String transactionRes, String req_id) throws Exception {

@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DPKMechanismInfo implements Mechanism{
-    String dpky_id;
-    String dpky_ip;
-    String dpky;
+public class DPKMechanismInfo implements Mechanism {
+    String dpky_id = "";
+    String dpky_ip = "";
+    String dpky = "";
 }

@@ -37,8 +37,7 @@ public class TransactionDispatcherConfig {
         return unlockDispatcher;
     }
 
-    //todo 添加其他通信协议的dispatcher
-    @Bean
+    @Bean("htlc")
     public SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher() {
         SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher = new SingleTransactionCrossChainDispatcher();
         singleTransactionCrossChainDispatcher.setGroupManager(groupManager);
@@ -47,7 +46,7 @@ public class TransactionDispatcherConfig {
         return singleTransactionCrossChainDispatcher;
     }
 
-    @Bean
+    @Bean("notary")
     public EDispatcher eDispatcher() {
         //NOTARY
         EDispatcher e = new EDispatcher("E");
@@ -57,7 +56,7 @@ public class TransactionDispatcherConfig {
         return e;
     }
 
-    @Bean
+    @Bean("dpky")
     PDispatcher pDispatcher() {
         //DPK
         PDispatcher p = new PDispatcher("P");

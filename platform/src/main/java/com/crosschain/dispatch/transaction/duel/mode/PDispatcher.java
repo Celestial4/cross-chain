@@ -30,34 +30,34 @@ public class PDispatcher extends OtherDispatcherBase {
         try {
             Map<Integer, String> dpkMap = new HashMap<>();
 
-            Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "na_id"));
+            Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpky_id"));
             Matcher m = p.matcher(result);
             int cnt = 0;
             while (m.find()) {
                 dpkMap.put(cnt++, m.group(3));
             }
 
-            p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "na_choice"));
+            p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpky_choice"));
             Matcher m1 = p.matcher(result);
             List<String> choices = new ArrayList<>();
             while (m1.find()) {
                 choices.add(m1.group(3));
             }
 
-            p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "time"));
+            p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpky_time"));
             Matcher m2 = p.matcher(result);
             List<String> times = new ArrayList<>();
             while (m2.find()) {
-                times.add(m.group(3));
+                times.add(m2.group(3));
             }
 
             for (int i = 0; i < cnt; i++) {
-                ProcessAudit processAudit = new ProcessAudit(times.get(i), "signer" + i + 1, dpkMap.get(i) + choices.get(i));
+                ProcessAudit processAudit = new ProcessAudit(times.get(i), "signer" + i + 1, dpkMap.get(i) + ":" + choices.get(i));
                 auditManager.addProcess(req_id, processAudit);
             }
         } catch (Exception e) {
-            log.error("DPKY 失败");
-            auditManager.addProcess(req_id, new ProcessAudit("dpky failed", result));
+            log.debug("获取DPKY过程信息异常：" + e.getMessage());
+            auditManager.addProcess(req_id, new ProcessAudit("dpky occurs exception", result));
         }
     }
 
@@ -66,7 +66,7 @@ public class PDispatcher extends OtherDispatcherBase {
         try {
             List<String> dpk_ids = new ArrayList<>();
             List<String> dpk_choices = new ArrayList<>();
-            Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "na_id"));
+            Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpkp_id"));
             Matcher m = p.matcher(result);
             int cnt = 0;
             while (m.find()) {
@@ -74,7 +74,7 @@ public class PDispatcher extends OtherDispatcherBase {
                 dpk_ids.add(m.group(3));
             }
 
-            p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "na_choice"));
+            p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpky_choice"));
             Matcher m1 = p.matcher(result);
             while (m1.find()) {
                 dpk_choices.add(m1.group(3));
@@ -91,10 +91,16 @@ public class PDispatcher extends OtherDispatcherBase {
             DPKMechanismInfo dpkMechanismInfo = new DPKMechanismInfo(dpky_ids.toString(), dpky_ip, dpkys.toString());
             auditManager.addDpkInfo(requestId, dpkMechanismInfo);
         } catch (Exception e) {
-            String msg = String.format("设置分布式密钥控制模式机制信息失败：%s", e.getMessage());
-            log.error(msg);
-            auditManager.addDpkInfo(requestId, new DPKMechanismInfo("error", "error", "error"));
-            throw new CrossChainException(800, msg);
+            log.debug("获取DPKY机制信息异常：" + e.getMessage());
+            auditManager.addDpkInfo(requestId, new DPKMechanismInfo());
+        }
+    }
+
+    @Override
+    protected void finishCrosschain(String result) throws Exception {
+        if (!extractInfo("status", result).equals("1")) {
+            String errorInfo = extractInfo("data", result);
+            throw new CrossChainException(800, "DPKY跨链失败：" + errorInfo);
         }
     }
 }

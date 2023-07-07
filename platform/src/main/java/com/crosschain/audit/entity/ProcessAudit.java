@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProcessAudit {
-    String process_time;
-    String process_log;
-    String process_result;
+    String process_time = "";
+    String process_log = "";
+    String process_result = "";
 
 
     public ProcessAudit(String process_log, String process_result) {

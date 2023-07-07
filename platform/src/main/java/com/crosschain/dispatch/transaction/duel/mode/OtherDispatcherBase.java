@@ -19,6 +19,8 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
 
     protected abstract void addMechanismInfo(String requestId, String result) throws Exception;
 
+    protected abstract void finishCrosschain(String result) throws Exception;
+
     @Override
     public Response process(CrossChainRequest req) throws Exception {
         String requestId = req.getRequestId();
@@ -32,17 +34,28 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
         String SPLITTER = ",";
         String args = srcChainRequest.getArgs() + SPLITTER + desChainRequest.getChainName() + SPLITTER + desChainRequest.getArgs() + SPLITTER + mode;
         srcChainRequest.setArgs(args);
-        String result = sendTransaction(srcChainRequest);
-        //设置过程信息
-        setProcessInfo(requestId, result);
-        //设置机制信息
-        addMechanismInfo(requestId, result);
+        String result = "";
+        TransactionAudit transAuditInfo = new TransactionAudit();
+        try {
+            result = sendTransaction(srcChainRequest);
 
-        TransactionAudit transAuditInfo = TransactionAudit.construct(groupManager, auditManager, req, result, requestId);
+            transAuditInfo = TransactionAudit.construct(groupManager, auditManager, req, result, requestId);
 
-        auditManager.addTransactionInfo(requestId, transAuditInfo);
-        auditManager.uploadAuditInfo(requestId);
+            //设置过程信息
+            setProcessInfo(requestId, result);
+            //设置机制信息
+            addMechanismInfo(requestId, result);
 
+            finishCrosschain(result);
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw e;
+        } finally {
+            auditManager.addTransactionInfo(requestId, transAuditInfo);
+            auditManager.uploadAuditInfo(requestId);
+        }
         return new SelfServiceResponse(result);
+
     }
 }

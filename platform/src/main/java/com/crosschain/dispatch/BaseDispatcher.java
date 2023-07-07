@@ -47,10 +47,10 @@ public class BaseDispatcher implements Dispatcher {
         if (Objects.isNull(chain)) {
             throw new CrossChainException(102, String.format("%s链不在跨链群组中，请先联系跨链管理员", reqInfo.getChainName()));
         } else if (chain.getStatus() != 0) {
-            throw new CrossChainException(103, String.format("%s链当前不可用,status=%d",reqInfo.getChainName(), chain.getStatus()));
+            throw new CrossChainException(103, String.format("%s链当前不可用,status=%d", reqInfo.getChainName(), chain.getStatus()));
         }
 
-        log.info("group:{},{},chain:{},{}",grp.getGroupName(),grp.getStatus(),chain.getChainName(),chain.getStatus());
+        log.info("group:{},{},chain:{},{}", grp.getGroupName(), grp.getStatus(), chain.getChainName(), chain.getStatus());
     }
 
     protected String extractInfo(String field, String source) throws Exception {
@@ -94,7 +94,7 @@ public class BaseDispatcher implements Dispatcher {
 
             return res;
         } catch (Exception e) {
-            throw new CrossChainException(500,String.format("合约%s执行异常：%s",req.getChainName(),e.getMessage()));
+            throw new CrossChainException(500, String.format("链%s执行合约%s异常：%s", req.getChainName(), req.getContract(), e.getMessage()));
         }
     }
 }

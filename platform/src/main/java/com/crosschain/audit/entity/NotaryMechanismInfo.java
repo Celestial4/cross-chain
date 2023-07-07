@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NotaryMechanismInfo implements Mechanism{
-    String na_id;
-    String na_choice;
-    String ns_ip;
+public class NotaryMechanismInfo implements Mechanism {
+    String na_id = "";
+    String na_choice = "";
+    String ns_ip = "";
 }
