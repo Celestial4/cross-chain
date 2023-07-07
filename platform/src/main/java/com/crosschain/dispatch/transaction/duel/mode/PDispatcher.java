@@ -66,7 +66,7 @@ public class PDispatcher extends OtherDispatcherBase {
         try {
             List<String> dpk_ids = new ArrayList<>();
             List<String> dpk_choices = new ArrayList<>();
-            Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpkp_id"));
+            Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpky_id"));
             Matcher m = p.matcher(result);
             int cnt = 0;
             while (m.find()) {
@@ -83,8 +83,8 @@ public class PDispatcher extends OtherDispatcherBase {
             StringBuilder dpky_ids = new StringBuilder();
             StringBuilder dpkys = new StringBuilder();
             for (int i = 0; i < cnt; i++) {
-                dpky_ids.append(dpk_ids.get(i)).append(i == cnt - 1 ? "," : "");
-                dpkys.append(dpk_choices.get(i)).append(i == cnt - 1 ? "," : "");
+                dpky_ids.append(dpk_ids.get(i)).append(i == cnt - 1 ? "" : ",");
+                dpkys.append(dpk_choices.get(i)).append(i == cnt - 1 ? "" : ",");
             }
 
             String dpky_ip = SystemInfo.getGatewayAddr(SystemInfo.getSelfChainName());

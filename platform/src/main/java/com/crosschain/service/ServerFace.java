@@ -52,8 +52,6 @@ public class ServerFace {
 
         try {
             constructRequest(crossChainVo, src, des);
-            //设置请求id
-            auditManager.joinRequest(crossChainVo);
 
             Dispatcher dispatcher;
             CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(), crossChainVo.getRequest_id());
@@ -63,6 +61,9 @@ public class ServerFace {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
             dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
+
+            //设置请求id
+            auditManager.joinRequest(crossChainVo);
             pool.addTask(new Task(dispatcher, req, auditManager));
             response = new UniResponse(200, "success", "跨链请求已提交");
         } catch (Exception e) {
