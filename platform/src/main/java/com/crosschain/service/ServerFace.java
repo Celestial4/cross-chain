@@ -1,8 +1,11 @@
 package com.crosschain.service;
 
+import com.alibaba.fastjson2.JSON;
 import com.crosschain.audit.AuditManager;
+import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.SystemInfo;
+import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
 import com.crosschain.dispatch.DispatcherManager;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -219,6 +223,84 @@ public class ServerFace {
     public String getMemInfo() {
         String memoryInfo = STATCSManager.getMemoryInfo();
         return new UniResponse(200, "success", memoryInfo).get();
+    }
+
+    @PostMapping("list_allgroups")
+    @ResponseBody
+    public String listGroups() {
+        String ret = "";
+        try {
+            List<Group> allGroups = groupManager.getAllGroups();
+            ret = JSON.toJSONString(allGroups);
+
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success",ret).get();
+    }
+
+    @PostMapping("list_group")
+    @ResponseBody
+    public String listGroup(@RequestParam("grp_name") String grp_name) {
+        String ret = "";
+        try {
+            Group group = groupManager.getGroup(grp_name);
+            ret = JSON.toJSONString(group);
+
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success",ret).get();
+    }
+
+    @PostMapping("list_allchains")
+    @ResponseBody
+    public String listChains() {
+        String ret = "";
+        try {
+            List<Chain> group = groupManager.getAllChains();
+            ret = JSON.toJSONString(group);
+
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success",ret).get();
+    }
+
+    @PostMapping("list_chain")
+    @ResponseBody
+    public String listChain(@RequestParam("chain_name") String chain_name) {
+        String ret = "";
+        try {
+            Chain chain = groupManager.getChain(chain_name);
+            ret = JSON.toJSONString(chain);
+
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success",ret).get();
+    }
+
+    @PostMapping("/delete_grp")
+    @ResponseBody
+    public String deleteGroup(@RequestParam("grp_name") String group) {
+        try {
+            groupManager.deleteGroup(group);
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success","操作成功").get();
+    }
+
+    @PostMapping("/delete_chain")
+    @ResponseBody
+    public String deleteChain(@RequestParam("chain_name") String chain) {
+        try {
+            groupManager.deleteChain(chain);
+        } catch (UniException e) {
+            return new ErrorServiceResponse(e).get();
+        }
+        return new UniResponse(200, "success","操作成功").get();
     }
 
     private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) throws Exception {

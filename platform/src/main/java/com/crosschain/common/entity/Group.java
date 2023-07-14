@@ -33,4 +33,13 @@ public class Group {
         }
         return null;
     }
+
+    public boolean contains(String chain) {
+        for (Chain member : members) {
+            if (member.getChainName().equals(chain)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

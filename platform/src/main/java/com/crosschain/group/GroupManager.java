@@ -22,6 +22,7 @@ public class GroupManager {
     private GroupAndChainSource ds;
 
     public void init() {
+        groups.clear();
         List<Group> groups;
         try {
             groups = ds.getAllGroups();
@@ -102,6 +103,7 @@ public class GroupManager {
     }
 
     public void removeTo(String srcGrpName, String desGrpName, String cName) throws UniException {
+        init();
         if (Strings.isEmpty(desGrpName) && Strings.isEmpty(srcGrpName)) {
             log.info("目标群组和源群组参数为空");
             throw new OperationException("缺少需要操作的群组参数，请查阅操作手册");
@@ -159,5 +161,45 @@ public class GroupManager {
                 throw new OperationException(String.format("%s或者%s群组不存在，请先添加群组", srcGrpName, desGrpName));
             }
         }
+    }
+
+    public List<Group> getAllGroups() throws UniException {
+        return ds.getAllGroups();
+    }
+
+    public List<Chain> getAllChains() throws UniException {
+        return ds.getAllChains();
+    }
+
+    public void deleteGroup(String groupName) throws UniException {
+        init();
+        if (groups.containsKey(groupName)) {
+            Group grp = groups.get(groupName);
+            for (Chain chain : grp.getMembers()) {
+                ds.deAssociate(grp.getGroupId(),chain.getChainId());
+                log.info(String.format("群组%s移除链%s",groupName,chain.getChainName()));
+            }
+            ds.removeGroup(groupName);
+            log.info(String.format("删除群组%s",groupName));
+        } else {
+            throw new OperationException(String.format("Group:%s 不存在",groupName));
+        }
+    }
+
+    public void deleteChain(String chain) throws UniException {
+        Chain c = ds.getChain(chain);
+        if (Objects.isNull(c)) {
+            throw new OperationException(String.format("链%s不存在",chain));
+        }
+
+        List<Group> allGroups = ds.getAllGroups();
+        for (Group group : allGroups) {
+            if (group.contains(chain)) {
+                ds.deAssociate(group.getGroupId(),c.getChainId());
+                log.info(String.format("群组%s移除链%s",group.getGroupName(),chain));
+            }
+        }
+        ds.removeChain(chain);
+        log.info(String.format("删除链%s", chain));
     }
 }

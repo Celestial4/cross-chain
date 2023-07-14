@@ -53,6 +53,17 @@ public class GroupAndChainSource {
         return groups;
     }
 
+    public List<Chain> getAllChains() throws UniException {
+        List<Chain> chains;
+        try {
+            chains = sql.query("select * from chain", Mappers.chainRowMapper);
+        } catch (Exception e) {
+            logger.error("获取所有链失败：" + e.getMessage());
+            throw new SqlException("获取所有链失败：" + e.getMessage());
+        }
+        return chains;
+    }
+
     public List<Chain> getChains(String chainNames) throws UniException {
         String stamt = String.format("select * from chain where chain_name in (%s)", chainNames);
         List<Chain> r;
@@ -171,5 +182,26 @@ public class GroupAndChainSource {
             throw new SqlException(ErrorMsg);
         }
         return chain;
+    }
+
+    public void removeGroup(String groupName) throws UniException {
+
+        try {
+            sql.update("delete from group where group_name=?");
+        } catch (Exception e) {
+            String ErrorMsg = String.format("删除群组失败：%s", e.getMessage());
+            logger.error(ErrorMsg);
+            throw new SqlException(ErrorMsg);
+        }
+    }
+
+    public void removeChain(String chain) throws UniException {
+        try {
+            sql.update("delete from chain where chain_name=?");
+        } catch (Exception e) {
+            String ErrorMsg = String.format("删除链失败：%s", e.getMessage());
+            logger.error(ErrorMsg);
+            throw new SqlException(ErrorMsg);
+        }
     }
 }
