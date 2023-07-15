@@ -241,7 +241,7 @@ public class ServerFace {
 
     @PostMapping("list_group")
     @ResponseBody
-    public String listGroup(@RequestParam("grp_name") String grp_name) {
+    public String listGroup(@RequestParam("group_name") String grp_name) {
         String ret = "";
         try {
             Group group = groupManager.getGroup(grp_name);
@@ -281,9 +281,9 @@ public class ServerFace {
         return new UniResponse(200, "success",ret).get();
     }
 
-    @PostMapping("/delete_grp")
+    @PostMapping("/delete_group")
     @ResponseBody
-    public String deleteGroup(@RequestParam("grp_name") String group) {
+    public String deleteGroup(@RequestParam("group_name") String group) {
         try {
             groupManager.deleteGroup(group);
         } catch (UniException e) {

@@ -187,7 +187,7 @@ public class GroupAndChainSource {
     public void removeGroup(String groupName) throws UniException {
 
         try {
-            sql.update("delete from group where group_name=?");
+            sql.update("delete from channel where channel_name=?",groupName);
         } catch (Exception e) {
             String ErrorMsg = String.format("删除群组失败：%s", e.getMessage());
             logger.error(ErrorMsg);
@@ -197,7 +197,7 @@ public class GroupAndChainSource {
 
     public void removeChain(String chain) throws UniException {
         try {
-            sql.update("delete from chain where chain_name=?");
+            sql.update("delete from chain where chain_name=?",chain);
         } catch (Exception e) {
             String ErrorMsg = String.format("删除链失败：%s", e.getMessage());
             logger.error(ErrorMsg);
