@@ -111,7 +111,7 @@ public class StatisticsHelper {
         Double total_t = Double.valueOf(Long.toString(memoryTotal));
         Double total_a = Double.valueOf(Long.toString(available));
         double usage_d = (total_t-total_a)/total_t;
-        oshi.add(String.format("{\"total\":%d,\"used\":%d,\"usage\":%.2f%%}", memoryTotal, memoryTotal - available, usage_d));
+        oshi.add(String.format("{\"total\":%d,\"used\":%d,\"usage\":%.2f%%}", memoryTotal, memoryTotal - available, usage_d * 100));
     }
 
     public static void printCpu(CentralProcessor processor) {
