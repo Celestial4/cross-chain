@@ -10,9 +10,12 @@ import com.crosschain.common.entity.CommonChainResponse;
 import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.basic.InfoSharingDispatcher;
+import com.crosschain.exception.ResolveException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
@@ -88,7 +91,6 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
         audit.setRequest_user_id(request_user_id);
 
         audit.setAction("1");
-        audit.setStatus(Integer.parseInt(status));
 
         String dataHash = "";
         int volume = 0;
@@ -105,5 +107,21 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
         audit.setVolume(volume);
         audit.setBehavior_content(behaviorContent);
         audit.setBehavioral_results(behavioralResults);
+
+        //设置status字段
+        try {
+            Pattern p = Pattern.compile("(status\":\\s*)(\"?)(\\w+)\\2");
+            Matcher m = p.matcher(processResult);
+            while (m.find()) {
+                if (m.group(3).equals("2")) {
+                    audit.setStatus(2);
+                    break;
+                } else {
+                    audit.setStatus(1);
+                }
+            }
+        }catch (Exception e) {
+            audit.setStatus(2);
+        }
     }
 }

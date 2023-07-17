@@ -20,7 +20,7 @@ import java.security.MessageDigest;
 @AllArgsConstructor
 public class TransactionAudit {
     String action = "";
-    Integer status;
+    Integer status = 2;
     String channel_name = "";
     String gateway_ids = "";
 

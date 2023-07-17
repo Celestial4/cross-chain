@@ -34,7 +34,7 @@ public class FabricExecutor {
                 logger.info(Fabrics.logPlacehdr(), "executing contract:[" + call + Arrays.toString(args) + "]");
                 res = contract.submitTransaction(call, args);
             }
-        } catch (EndorseException | SubmitException | CommitStatusException | CommitException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return "{\"status\": 2,\"data\":\"" + e.getMessage() + "\"}";
         }
@@ -59,7 +59,10 @@ public class FabricExecutor {
         return prettyJson(new String(json, StandardCharsets.UTF_8));
     }
 
-    private String prettyJson(final String json) {
+    private String prettyJson(String json) {
+        if (json == null || json.length() == 0 || json.equals("null")) {
+            json = "{\"status\": 2,\"data\": \"null\"}";
+        }
         JsonElement parsedJson = JsonParser.parseString(json);
         return gson.toJson(parsedJson);
     }

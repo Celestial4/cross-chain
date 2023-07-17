@@ -16,7 +16,7 @@ public class App {
             if (CommonRule.init(Fabrics.getDeployPort(), FabricStub.class.getMethod("handleRequest", String.class))) {
                 logger.info(Fabrics.logPlacehdr(),"server started. start serving!");
             } else {
-                logger.error(Fabrics.logPlacehdr(),"server initialization failed！");
+                logger.error(Fabrics.logPlacehdr(),"server initialization failed");
             }
 
         } catch (NoSuchMethodException e) {

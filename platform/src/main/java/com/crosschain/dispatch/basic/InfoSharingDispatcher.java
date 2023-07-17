@@ -37,9 +37,9 @@ public abstract class InfoSharingDispatcher extends BaseDispatcher {
         response.setSrcResult(srcRes.getResult());
 
         //源链执行后上报数据
-        processAudit(auditInfo, request, response.get(), "1");
+        processAudit(auditInfo, request, response.getDesResult()+"\n"+response.getSrcResult(), "1");
         }catch (Exception e) {
-            processAudit(auditInfo, request, response.get(),"2");
+            processAudit(auditInfo, request, response.getDesResult()+"\n"+response.getSrcResult(),"2");
             throw e;
         }finally {
             auditManager.addTransactionInfo(request.getRequestId(), auditInfo);

@@ -19,7 +19,7 @@ public class CrossChainServiceResponse extends UniResponse {
     public String get() {
         code = 200;
         message = "success";
-        data = String.format("[desChainResult]:\n%s\n[srcChainResult]:\n%s\n", desResult, srcResult);
+        data = String.format("%s\n%s", desResult, srcResult);
         return super.get();
     }
 }
