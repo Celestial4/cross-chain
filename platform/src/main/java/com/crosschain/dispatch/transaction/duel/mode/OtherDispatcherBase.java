@@ -39,19 +39,19 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
         try {
             result = sendTransaction(srcChainRequest);
 
-            transAuditInfo = TransactionAudit.construct(groupManager, auditManager, req, result, requestId);
-
-            //设置过程信息
-            setProcessInfo(requestId, result);
-            //设置机制信息
-            addMechanismInfo(requestId, result);
+            TransactionAudit.construct(transAuditInfo, groupManager.getGroup(req.getGroup()), auditManager, req, result);
 
             finishCrosschain(result);
 
         } catch (Exception e) {
             log.error(e.getMessage());
+            TransactionAudit.setErrorCallAuditInfo(transAuditInfo, req, groupManager.getGroup(req.getGroup()), auditManager);
             throw e;
         } finally {
+            //设置过程信息
+            setProcessInfo(requestId, result);
+            //设置机制信息
+            addMechanismInfo(requestId, result);
             auditManager.addTransactionInfo(requestId, transAuditInfo);
             auditManager.uploadAuditInfo(requestId);
         }

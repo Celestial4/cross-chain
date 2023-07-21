@@ -7,7 +7,6 @@ import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.exception.UniException;
-import com.crosschain.group.GroupManager;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,8 +50,13 @@ public class TransactionAudit {
     String behavioral_results = "";
     Mechanism mechanism_info;
 
-    public static TransactionAudit construct(GroupManager groupManager, AuditManager auditManager, CrossChainRequest req, String transactionRes, String req_id) throws Exception {
+    public static void construct(TransactionAudit payload,
+                                 Group group,
+                                 AuditManager auditManager,
+                                 CrossChainRequest req,
+                                 String transactionRes) throws Exception {
         String proof, timestamp, action, status;
+        String req_id = req.getRequestId();
 
         try {
             proof = CrossChainUtils.extractInfo("hash", transactionRes);
@@ -60,16 +64,15 @@ public class TransactionAudit {
             action = CrossChainUtils.extractInfo("action", transactionRes);
             status = CrossChainUtils.extractInfo("status", transactionRes);
         } catch (UniException e) {
-            proof = "error";
+            proof = "null";
             timestamp = "0";
             action = "";
-            status = "-1";
+            status = "2";
         }
 
         String time = timestamp;
         String receipt = "1".equals(status) ? "成功" : "失败";
 
-        Group group = groupManager.getGroup(req.getGroup());
         String grp_name = group.getGroupName();
         String gateway_id = SystemInfo.getGatewayAddr(SystemInfo.getSelfChainName()) + "," + SystemInfo.getGatewayAddr(req.getDesChainRequest().getChainName());
 
@@ -105,7 +108,6 @@ public class TransactionAudit {
         String behaviorContent = action;
         String behavioralResults = status;
 
-        TransactionAudit payload = new TransactionAudit();
         payload.setAction(action);
         payload.setStatus(Integer.parseInt(status));
         payload.setChannel_name(grp_name);
@@ -134,6 +136,42 @@ public class TransactionAudit {
         payload.setVolume(volume);
         payload.setBehavior_content(behaviorContent);
         payload.setBehavioral_results(behavioralResults);
-        return payload;
+    }
+
+    public static void setErrorCallAuditInfo(TransactionAudit payload, CrossChainRequest req, Group group, AuditManager auditManager) throws Exception {
+
+        Chain sChain = group.getChain(SystemInfo.getSelfChainName());
+        String src_chain_id = sChain.getChainId();
+        String src_contract = req.getSrcChainRequest().getContract();
+        String src_chain_name = sChain.getChainName();
+        String src_chain_type = sChain.getChainType();
+
+        Chain dChain = group.getChain(req.getDesChainRequest().getChainName());
+        String des_chain_id = dChain.getChainId();
+        String des_contract = req.getDesChainRequest().getContract();
+        String des_chain_name = dChain.getChainName();
+        String des_chain_type = dChain.getChainType();
+
+        payload.setSource_app_chain_type(src_chain_type);
+        payload.setSource_app_chain_contract(src_contract);
+        payload.setSource_app_chain_id(src_chain_id);
+        payload.setSource_app_chain_service(src_chain_name);
+        payload.setTarget_app_chain_type(des_chain_type);
+        payload.setTarget_app_chain_contract(des_contract);
+        payload.setTarget_app_chain_id(des_chain_id);
+        payload.setTarget_app_chain_service(des_chain_name);
+
+        String grp_name = group.getGroupName();
+        String gateway_id = SystemInfo.getGatewayAddr(SystemInfo.getSelfChainName()) + "," + SystemInfo.getGatewayAddr(req.getDesChainRequest().getChainName());
+
+        payload.setChannel_name(grp_name);
+        payload.setGateway_ids(gateway_id);
+
+        //用户名和id
+        String request_user_name = auditManager.getRequestUser(req.getRequestId());
+        String request_user_id = CrossChainUtils.hash(request_user_name.getBytes(StandardCharsets.UTF_8));
+        payload.setRequest_user(request_user_name);
+        payload.setRequest_user_id(request_user_id);
+        payload.setStatus(2);
     }
 }

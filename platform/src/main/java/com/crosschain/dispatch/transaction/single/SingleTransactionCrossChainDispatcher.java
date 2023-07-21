@@ -8,6 +8,7 @@ import com.crosschain.common.entity.CommonChainResponse;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.exception.CrossChainException;
+import com.crosschain.exception.LockException;
 import com.crosschain.service.response.entity.CrossChainServiceResponse;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,24 +29,25 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
     CommonChainResponse processSrcLock(CommonChainRequest req, String id) throws Exception {
 
         log.info("[src chain do lock]:\n");
-        String res = sendTransaction(req);
-        auditManager.addProcess(id, new ProcessAudit("lock", res));
-        Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
-        Matcher m = p.matcher(req.getArgs());
-        String lock_amount = null;
-        String lock_time = null;
-        if (m.find()) {
-            lock_amount = m.group(5);
-            lock_time = m.group(6);
-        }
-        auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, lock_time));
-        if (!extractInfo("status", res).equals("1")) {
-            auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, "lock failed."));
-            TransactionAudit au = new TransactionAudit();
-            au.setStatus(2);
-            auditManager.addTransactionInfo(id, au);
-            auditManager.uploadAuditInfo(id);
-            throw new CrossChainException(104, String.format("源链资产锁定失败,请检查跨链参数或相应区块链，详情：%s", extractInfo("data", res)));
+        String res = "";
+        try {
+            res = sendTransaction(req);
+            auditManager.addProcess(id, new ProcessAudit("lock", res));
+            Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
+            Matcher m = p.matcher(req.getArgs());
+            String lock_amount = null;
+            String lock_time = null;
+            if (m.find()) {
+                lock_amount = m.group(5);
+                lock_time = m.group(6);
+            }
+            auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, lock_time));
+            if (!extractInfo("status", res).equals("1")) {
+                auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, "lock failed."));
+                throw new CrossChainException(104, String.format("源链资产锁定失败,请检查跨链参数或相应区块链，详情：%s", extractInfo("data", res)));
+            }
+        } catch (Exception e) {
+            throw new LockException("lock failed");
         }
 
         return new CommonChainResponse(res);
@@ -85,34 +87,35 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         CommonChainRequest srcChainRequest = request.getSrcChainRequest();
         CommonChainRequest desChainRequest = request.getDesChainRequest();
 
+        //事务上报data
+        TransactionAudit transAuditInfo = new TransactionAudit();
+        String sender = null;
+        String h = null;
+
         //add current timestamp
-        long current_time = System.currentTimeMillis() / 1000;
+        long current_time = System.currentTimeMillis();
         String ori = srcChainRequest.getArgs();
         ori = ori + "," + current_time;
         srcChainRequest.setArgs(ori);
 
         //源链锁资产
         CommonChainResponse srcRes = null;
-
-        srcRes = processSrcLock(srcChainRequest, requestId);
-        response.setSrcResult("[lock]:\n" + srcRes.getResult() + "\n");
-
-        //通过正则读取sender和原像
-        Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
-        Matcher m = p.matcher(srcChainRequest.getArgs());
-        String sender = null;
-        String h = null;
-        if (m.find()) {
-            sender = m.group(1);
-            h = m.group(4);
-        }
-
-        //事务上报data
-        TransactionAudit transAuditInfo = null;
-
-        //do deschain or rollback
-        CommonChainResponse desRes = null;
         try {
+            srcRes = processSrcLock(srcChainRequest, requestId);
+            response.setSrcResult("[lock]:\n" + srcRes.getResult() + "\n");
+
+            //通过正则读取sender和原像
+            Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
+            Matcher m = p.matcher(srcChainRequest.getArgs());
+
+            if (m.find()) {
+                sender = m.group(1);
+                h = m.group(4);
+            }
+
+            //do deschain or rollback
+            CommonChainResponse desRes = null;
+
             desRes = processDes(desChainRequest, requestId);
             response.setDesResult(desRes.getResult());
 
@@ -133,10 +136,13 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
                 rollback(response, srcChainRequest, sender, h, requestId);
             }
             //流程结束后上报事务数据
-            transAuditInfo = TransactionAudit.construct(groupManager, auditManager, request, srcRes.getResult(), requestId);
+            TransactionAudit.construct(transAuditInfo, groupManager.getGroup(request.getGroup()), auditManager, request, srcRes.getResult());
+        } catch (LockException lockException) {
+            TransactionAudit.setErrorCallAuditInfo(transAuditInfo, request, groupManager.getGroup(request.getGroup()), auditManager);
         } catch (Exception e) {
+            //除了锁定错误外，其他出错都要回滚
             rollback(response, srcChainRequest, sender, h, requestId);
-            transAuditInfo = TransactionAudit.construct(groupManager, auditManager, request, srcRes.getResult(), requestId);
+            TransactionAudit.construct(transAuditInfo, groupManager.getGroup(request.getGroup()), auditManager, request, srcRes.getResult());
             throw e;
         } finally {
             auditManager.addTransactionInfo(requestId, transAuditInfo);
