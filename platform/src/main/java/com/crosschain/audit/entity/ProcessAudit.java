@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProcessAudit {
     String process_time = "";
-    String process_log = "";
+    ProcessLog process_log;
     String process_result = "";
 
 
-    public ProcessAudit(String process_log, String process_result) {
+    public ProcessAudit(String process_result,ProcessLog log) {
         this.process_time = String.valueOf(System.currentTimeMillis());
-        this.process_log = process_log;
+        this.process_log = log;
         this.process_result = process_result;
     }
 }

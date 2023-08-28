@@ -2,7 +2,11 @@ package com.crosschain.dispatch.transaction.duel.mode;
 
 import com.crosschain.audit.entity.NotaryMechanismInfo;
 import com.crosschain.audit.entity.ProcessAudit;
+import com.crosschain.audit.entity.ProcessLog;
+import com.crosschain.common.AuditUtils;
 import com.crosschain.common.SystemInfo;
+import com.crosschain.common.entity.Chain;
+import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.exception.CrossChainException;
 import com.crosschain.exception.UniException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +23,21 @@ public class EDispatcher extends OtherDispatcherBase {
     }
 
     @Override
-    protected void setProcessInfo(String req_id, String result) {
+    protected void setProcessInfo(String req_id, String result, CommonChainRequest req) {
+        Chain chain = null;
         ProcessAudit processAudit = new ProcessAudit();
         try {
-            processAudit.setProcess_log("notary");
+            groupManager.getChain(req.getChainName());
+            ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "notory");
+            processAudit.setProcess_log(processLog);
             processAudit.setProcess_result(result);
             String na_time = extractInfo("na_time", result);
             processAudit.setProcess_time(na_time);
         } catch (Exception e) {
             //do nothing
             log.debug("获取公证人处理过程异常：" + e.getMessage());
+            ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "notory occurs exception");
+            processAudit.setProcess_log(processLog);
         } finally {
             auditManager.addProcess(req_id, processAudit);
         }

@@ -2,7 +2,11 @@ package com.crosschain.dispatch.transaction.duel.mode;
 
 import com.crosschain.audit.entity.DPKMechanismInfo;
 import com.crosschain.audit.entity.ProcessAudit;
+import com.crosschain.audit.entity.ProcessLog;
+import com.crosschain.common.AuditUtils;
 import com.crosschain.common.SystemInfo;
+import com.crosschain.common.entity.Chain;
+import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.exception.CrossChainException;
 import com.crosschain.exception.UniException;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +30,10 @@ public class PDispatcher extends OtherDispatcherBase {
     }
 
     @Override
-    protected void setProcessInfo(String req_id, String result) {
+    protected void setProcessInfo(String req_id, String result, CommonChainRequest req) {
+        Chain chain = null;
         try {
+            chain = groupManager.getChain(req.getChainName());
             Map<Integer, String> dpkMap = new HashMap<>();
 
             Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", "dpky_id"));
@@ -52,12 +58,15 @@ public class PDispatcher extends OtherDispatcherBase {
             }
 
             for (int i = 0; i < cnt; i++) {
-                ProcessAudit processAudit = new ProcessAudit(times.get(i), "signer" + i + 1, dpkMap.get(i) + ":" + choices.get(i));
-                auditManager.addProcess(req_id, processAudit);
+
+                String signer = "signer" + (i + 1);
+                ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, signer);
+                auditManager.addProcess(req_id, new ProcessAudit(result, processLog));
             }
         } catch (Exception e) {
             log.debug("获取DPKY过程信息异常：" + e.getMessage());
-            auditManager.addProcess(req_id, new ProcessAudit("dpky occurs exception", result));
+            ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "");
+            auditManager.addProcess(req_id, new ProcessAudit("dpky occurs exception", processLog));
         }
     }
 

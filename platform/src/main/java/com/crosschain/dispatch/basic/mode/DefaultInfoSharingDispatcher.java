@@ -1,7 +1,9 @@
 package com.crosschain.dispatch.basic.mode;
 
 import com.crosschain.audit.entity.ProcessAudit;
+import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.audit.entity.TransactionAudit;
+import com.crosschain.common.AuditUtils;
 import com.crosschain.common.CrossChainUtils;
 import com.crosschain.common.SystemInfo;
 import com.crosschain.common.entity.Chain;
@@ -10,7 +12,6 @@ import com.crosschain.common.entity.CommonChainResponse;
 import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.basic.InfoSharingDispatcher;
-import com.crosschain.exception.ResolveException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
@@ -27,7 +28,9 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
         log.info("[dest call info]:\n");
         String res = sendTransaction(req);
 
-        auditManager.addProcess(req_id,new ProcessAudit("call contract of dest chain",res));
+        Chain chain = groupManager.getChain(req.getChainName());
+        ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "call dest chain");
+        auditManager.addProcess(req_id, new ProcessAudit(res, processLog));
 
         return new CommonChainResponse(res);
     }
@@ -38,7 +41,9 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
         log.info("[src call info]\n");
         String res = sendTransaction(req);
 
-        auditManager.addProcess(req_id,new ProcessAudit("call contract of src chain",res));
+        Chain chain = groupManager.getChain(req.getChainName());
+        ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "call src chain");
+        auditManager.addProcess(req_id, new ProcessAudit(res, processLog));
 
         return new CommonChainResponse(res);
     }

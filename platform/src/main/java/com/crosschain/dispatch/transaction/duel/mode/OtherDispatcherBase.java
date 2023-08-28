@@ -15,7 +15,7 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
 
     protected abstract String getMechanism();
 
-    protected abstract void setProcessInfo(String reqId, String result);
+    protected abstract void setProcessInfo(String reqId, String result, CommonChainRequest req);
 
     protected abstract void addMechanismInfo(String requestId, String result) throws Exception;
 
@@ -49,7 +49,7 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
             throw e;
         } finally {
             //设置过程信息
-            setProcessInfo(requestId, result);
+            setProcessInfo(requestId, result, srcChainRequest);
             //设置机制信息
             addMechanismInfo(requestId, result);
             auditManager.addTransactionInfo(requestId, transAuditInfo);
