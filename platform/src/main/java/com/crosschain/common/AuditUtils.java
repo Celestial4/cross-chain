@@ -16,7 +16,7 @@ public class AuditUtils {
     public static ProcessLog buildProcessLog(Chain chain, String res, String desc) {
         String chainName = chain.getChainName();
         String chainType = chain.getChainType();
-        Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w]+)\\2", "addr"));
+        Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w]+)\\2", "hash"));
         String tx_hash;
         Matcher m = p.matcher(res);
         if (m.find()) {
