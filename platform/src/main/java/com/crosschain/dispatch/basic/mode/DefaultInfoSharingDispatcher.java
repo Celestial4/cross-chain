@@ -1,5 +1,6 @@
 package com.crosschain.dispatch.basic.mode;
 
+import com.crosschain.audit.entity.ExtensionInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.audit.entity.TransactionAudit;
@@ -24,26 +25,28 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
     @Override
     protected CommonChainResponse processDes(CommonChainRequest req, String req_id) throws
             Exception {
-        
+
         log.info("[dest call info]:\n");
         String res = sendTransaction(req);
 
         Chain chain = groupManager.getChain(req.getChainName());
+        ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
         ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "call dest chain");
-        auditManager.addProcess(req_id, new ProcessAudit(res, processLog));
+        auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
 
         return new CommonChainResponse(res);
     }
 
     @Override
     protected CommonChainResponse processSrc(CommonChainRequest req, String req_id) throws Exception {
-        
+
         log.info("[src call info]\n");
         String res = sendTransaction(req);
 
         Chain chain = groupManager.getChain(req.getChainName());
+        ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
         ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "call src chain");
-        auditManager.addProcess(req_id, new ProcessAudit(res, processLog));
+        auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
 
         return new CommonChainResponse(res);
     }
@@ -99,7 +102,7 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
 
         String dataHash = "";
         int volume = 0;
-        String behaviorContent="";
+        String behaviorContent = "";
         String behavioralResults = "";
         if ("1".equals(status)) {
             dataHash = CrossChainUtils.hash(processResult.getBytes(StandardCharsets.UTF_8));
@@ -125,7 +128,7 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
                     audit.setStatus(1);
                 }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             audit.setStatus(2);
         }
     }

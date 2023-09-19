@@ -1,9 +1,6 @@
 package com.crosschain.dispatch.transaction.single;
 
-import com.crosschain.audit.entity.HTLCMechanismInfo;
-import com.crosschain.audit.entity.ProcessAudit;
-import com.crosschain.audit.entity.ProcessLog;
-import com.crosschain.audit.entity.TransactionAudit;
+import com.crosschain.audit.entity.*;
 import com.crosschain.common.AuditUtils;
 import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
@@ -21,17 +18,19 @@ import java.util.regex.Pattern;
 @Slf4j
 public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
-    CommonChainResponse processDes(CommonChainRequest req, String id) throws Exception {
+    CommonChainResponse processDes(CommonChainRequest req, String req_id) throws Exception {
 
         log.info("[des chain do]:\n");
         String res = sendTransaction(req);
         Chain chain = groupManager.getChain(req.getChainName());
         ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "call dest chain");
-        auditManager.addProcess(id, new ProcessAudit(res, processLog));
+        ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
+        auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
+
         return new CommonChainResponse(res);
     }
 
-    CommonChainResponse processSrcLock(CommonChainRequest req, String id) throws Exception {
+    CommonChainResponse processSrcLock(CommonChainRequest req, String req_id) throws Exception {
 
         log.info("[src chain do lock]:\n");
         String res = "";
@@ -39,7 +38,8 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             res = sendTransaction(req);
             Chain chain = groupManager.getChain(req.getChainName());
             ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "lock");
-            auditManager.addProcess(id, new ProcessAudit(res, processLog));
+            ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
+            auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
             Pattern p = Pattern.compile("(\\w+)(,)(\\w+)\\2(\\w+)\\2(\\w+)\\2(\\w+)");
             Matcher m = p.matcher(req.getArgs());
             String lock_amount = null;
@@ -48,9 +48,9 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
                 lock_amount = m.group(5);
                 lock_time = m.group(6);
             }
-            auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, lock_time));
+            auditManager.addHTLCInfo(req_id, new HTLCMechanismInfo(lock_amount, lock_amount, lock_time));
             if (!extractInfo("status", res).equals("1")) {
-                auditManager.addHTLCInfo(id, new HTLCMechanismInfo(lock_amount, lock_amount, "lock failed."));
+                auditManager.addHTLCInfo(req_id, new HTLCMechanismInfo(lock_amount, lock_amount, "lock failed."));
                 throw new CrossChainException(104, String.format("源链资产锁定失败,请检查跨链参数或相应区块链，详情：%s", extractInfo("data", res)));
             }
         } catch (Exception e) {
@@ -60,27 +60,29 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         return new CommonChainResponse(res);
     }
 
-    CommonChainResponse processSrcUnlock(CommonChainRequest req, String id) throws Exception {
+    CommonChainResponse processSrcUnlock(CommonChainRequest req, String req_id) throws Exception {
 
         log.info("[src chain do unlock]:\n");
         String res = sendTransaction(req);
         Chain chain = groupManager.getChain(req.getChainName());
         ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "unlock");
-        auditManager.addProcess(id, new ProcessAudit(res, processLog));
+        ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
+        auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(105, String.format("源链资产解锁失败,详情：%s", extractInfo("data", res)));
         }
         return new CommonChainResponse(res);
     }
 
-    CommonChainResponse processSrcRollback(CommonChainRequest req, String id) throws Exception {
+    CommonChainResponse processSrcRollback(CommonChainRequest req, String req_id) throws Exception {
 
         log.info("[src chain do rollback]:\n");
         String res = sendTransaction(req);
         Chain chain = groupManager.getChain(req.getChainName());
         ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "rollback");
-        auditManager.addProcess(id, new ProcessAudit(res, processLog));
-        auditManager.getHTLCInfo(id).setHtlc_status("状态回滚，不解锁");
+        ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
+        auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
+        auditManager.getHTLCInfo(req_id).setHtlc_status("状态回滚，不解锁");
         if (!extractInfo("status", res).equals("1")) {
             throw new CrossChainException(106, String.format("源链资产回滚失败,详情：%s", extractInfo("data", res)));
         }

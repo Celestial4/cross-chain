@@ -1,5 +1,7 @@
 package com.crosschain.common;
 
+import com.alibaba.fastjson2.JSON;
+import com.crosschain.audit.entity.ExtensionInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.common.entity.Chain;
@@ -25,5 +27,14 @@ public class AuditUtils {
             tx_hash = "";
         }
         return new ProcessLog(chainName, chainType, tx_hash, desc);
+    }
+
+    /**
+     * 从合约调用结果的json字符串构造上报数据
+     * @param json
+     * @return
+     */
+    public static ExtensionInfo buildExtensionInfo(String json){
+        return JSON.parseObject(json, ExtensionInfo.class);
     }
 }
