@@ -1,10 +1,11 @@
 #! /bin/bash
+wd=$(cd `dirname $0` && pwd)
+cd $wd
 
-wd=~/gateways
-file="gateway-2.0.jar"
+file=$(find $wd -name "*.jar")
 
-for dir in $(ls $wd); do
-        if [[ $dir =~ "-" && -d $wd/$dir ]]; then
-                cp -u $file $wd/$dir/app
+for dir in $(ls "../"); do
+        if [[ $dir =~ "-" && -d $wd/../$dir ]]; then
+                cp -u $file $wd/../$dir/app
         fi
 done
