@@ -1,5 +1,6 @@
 package com.crosschain.dispatch.transaction.duel;
 
+import com.crosschain.audit.entity.TransactionAudit;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.BaseDispatcher;
@@ -19,22 +20,30 @@ public abstract class TransactionBase extends BaseDispatcher {
 
     @Override
     public CrossChainServiceResponse process(CrossChainRequest req) throws Exception {
-
+        String requestId = req.getRequestId();
         Group group = groupManager.getGroup(req.getGroup());
 
         CrossChainServiceResponse response = new CrossChainServiceResponse();
-
+        //上报的事务数据初始化
+        TransactionAudit transAuditInfo = new TransactionAudit();
         try {
-            String src_res = doSrc(req.getSrcChainRequest(), group);
-            String des_res = doDes(req.getDesChainRequest(), group);
+            String src_unlock_args = doSrc(req.getSrcChainRequest(), group);
+            String des_unlock_args = doDes(req.getDesChainRequest(), group);
 
-            //if unlock successfully, do upload audition info
-            processLast(req, src_res);
-            response.setDesResult(des_res);
-            response.setSrcResult(src_res);
+            //if unlock successfully, do upload audition info，这里是调用unlockDispatcher才会走到
+            processLast(req, src_unlock_args);
+
+            response.setDesResult(des_unlock_args);
+            response.setSrcResult(src_unlock_args);
+
+            //流程结束后组装事务数据
+            //TransactionAudit.construct(transAuditInfo, groupManager.getGroup(req.getGroup()), auditManager, req, );
         } catch (Exception e) {
             rollBack(req, response);
             throw e;
+        } finally {
+            auditManager.addTransactionInfo(requestId, transAuditInfo);
+            auditManager.uploadAuditInfo(requestId);
         }
         return response;
 

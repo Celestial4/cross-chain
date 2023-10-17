@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -48,7 +50,7 @@ public class TransactionAudit {
     Integer volume;
     String behavior_content = "";
     String behavioral_results = "";
-    Mechanism mechanism_info;
+    List<Mechanism> mechanism_info = new ArrayList<>();
 
     public static void construct(TransactionAudit payload,
                                  Group group,

@@ -50,25 +50,34 @@ public class ServerFace {
     @PostMapping("/crosschain")
     @ResponseBody
     public String crossChain(@RequestBody CrossChainVo crossChainVo) {
+
         CommonChainRequest src = new CommonChainRequest();
 
         CommonChainRequest des = new CommonChainRequest();
 
         try {
+            //拆解源、目标链的跨链请求
             constructRequest(crossChainVo, src, des);
 
             Dispatcher dispatcher;
             CrossChainRequest req = new CrossChainRequest(src, des, crossChainVo.getGroup(), crossChainVo.getRequest_id());
             log.debug("[destination request]: {},{},{},{}\n[source request]: {},{},{},{}", des.getChainName(), des.getContract(), des.getFunction(), des.getArgs(), src.getChainName(), src.getContract(), src.getFunction(), src.getArgs());
 
-            //鉴权
+            //鉴权，验证username usertoken是否匹配以及是否指向自己
             filter.doFilter(crossChainVo);
+            //通过mode字段获取相应跨链类型的处理器dispatcher
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
+
+            //检查跨链群组合法性以及相应的源、目标链的合法性
             dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
 
-            //设置请求id
+            //设置请求id，追踪每一次的跨链请求相关信息（数据上报的信息）
             auditManager.joinRequest(crossChainVo);
+
+            //添加异步任务，具体跨链请求在这个任务里面去执行
             pool.addTask(new Task(dispatcher, req, auditManager));
+
+            //
             response = new UniResponse(200, "success", "跨链请求已提交");
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -304,11 +313,13 @@ public class ServerFace {
     }
 
     private void constructRequest(CrossChainVo crossChainVo, CommonChainRequest src, CommonChainRequest des) throws Exception {
+        src.setRequestId(crossChainVo.getRequest_id());
         src.setChainName(SystemInfo.getSelfChainName());
         src.setContract(crossChainVo.getSrc_contract());
         src.setFunction(crossChainVo.getSrc_function());
         src.setArgs(crossChainVo.getSrc_args());
 
+        des.setRequestId(crossChainVo.getRequest_id());
         des.setChainName(crossChainVo.getDes_chain());
         des.setContract(crossChainVo.getDes_contract());
         des.setFunction(crossChainVo.getDes_function());

@@ -27,11 +27,20 @@ public class DefaultInfoSharingDispatcher extends InfoSharingDispatcher {
             Exception {
 
         log.info("[dest call info]:\n");
+        //向目标链发起调用
         String res = sendTransaction(req);
 
         Chain chain = groupManager.getChain(req.getChainName());
+
+        //做的是 数据上报的工作
+
+        //组装区块链返回中的  扩展信息
         ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
+
+        //组装跨链的过程信息
         ProcessLog processLog = AuditUtils.buildProcessLog(chain, res, "call dest chain");
+
+        //添加过程信息到总的数据上报结构体里
         auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
 
         return new CommonChainResponse(res);

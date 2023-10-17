@@ -11,9 +11,12 @@ public class CrossChainClient {
         Socket socket = new Socket(socketInfo[0], Integer.parseInt(socketInfo[1]));
         //发送跨链请求
         OutputStream os = socket.getOutputStream();
-        String result = String.format("%s\r\n%s\r\n%s", req[0], req[1], req[2]);
+        StringBuilder result = new StringBuilder();
 
-        os.write(result.getBytes(StandardCharsets.UTF_8));
+        for (String i : req) {
+            result.append(i).append("\r\n");
+        }
+        os.write(result.toString().getBytes(StandardCharsets.UTF_8));
         InputStream is = socket.getInputStream();
 
         //读取跨链回执

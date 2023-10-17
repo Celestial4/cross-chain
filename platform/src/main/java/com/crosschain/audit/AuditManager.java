@@ -67,7 +67,8 @@ public class AuditManager {
     }
 
     public void addHTLCInfo(String id, HTLCMechanismInfo h) {
-        auditionMap.get(id).getTransaction_result().setMechanism_info(h);
+        List<Mechanism> mechanism_info = auditionMap.get(id).getTransaction_result().getMechanism_info();
+        mechanism_info.add(h);
     }
 
     public HTLCMechanismInfo getHTLCInfo(String id) {
@@ -75,11 +76,13 @@ public class AuditManager {
     }
 
     public void addNotaryInfo(String id, NotaryMechanismInfo n) {
-        auditionMap.get(id).getTransaction_result().setMechanism_info(n);
+        List<Mechanism> mechanism_info = auditionMap.get(id).getTransaction_result().getMechanism_info();
+        mechanism_info.add(n);
     }
 
     public void addDpkInfo(String id, DPKMechanismInfo d) {
-        auditionMap.get(id).getTransaction_result().setMechanism_info(d);
+        List<Mechanism> mechanism_info = auditionMap.get(id).getTransaction_result().getMechanism_info();
+        mechanism_info.add(d);
     }
 
     public String getRequestIngredient(String id) throws UniException {

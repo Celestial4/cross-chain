@@ -81,13 +81,22 @@ public class BaseDispatcher implements Dispatcher {
         auditManager.completeRequest(id);
     }
 
+    /**
+     * 向跨链服务组件发送具体的 链执行信息
+     *
+     * @param req 单条链的执行信息
+     * @return 链执行的结果信息
+     * @throws Exception
+     */
     protected String sendTransaction(CommonChainRequest req) throws Exception {
         try {
+            //获取到要调的链的服务组件连接信息
             String socAddress = SystemInfo.getServiceAddr(req.getChainName());
+
             String[] socketInfo = socAddress.split(":");
             log.info("[-----call info-----]\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
-            byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n")});
+            byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n"), req.getRequestId()});
 
             String res = new String(data, StandardCharsets.UTF_8);
             log.info("received from blockchain:{},{}", req.getChainName(), res);

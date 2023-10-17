@@ -32,11 +32,15 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
 
         //do crosschain
         String SPLITTER = ",";
+        //这个模式是区块链合约规定的  源链的参数，目标链名，目标链参数，模式
         String args = srcChainRequest.getArgs() + SPLITTER + desChainRequest.getChainName() + SPLITTER + desChainRequest.getArgs() + SPLITTER + mode;
+
+        //复用srcRequest用于发起区块链合约调用
         srcChainRequest.setArgs(args);
         String result = "";
         TransactionAudit transAuditInfo = new TransactionAudit();
         try {
+            //实际执行
             result = sendTransaction(srcChainRequest);
 
             TransactionAudit.construct(transAuditInfo, groupManager.getGroup(req.getGroup()), auditManager, req, result);
