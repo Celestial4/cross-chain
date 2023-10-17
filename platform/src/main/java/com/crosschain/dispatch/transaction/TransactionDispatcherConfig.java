@@ -1,10 +1,10 @@
 package com.crosschain.dispatch.transaction;
 
 import com.crosschain.audit.AuditManager;
-import com.crosschain.dispatch.transaction.duel.LockDispatcher;
-import com.crosschain.dispatch.transaction.duel.UnlockDispatcher;
-import com.crosschain.dispatch.transaction.duel.mode.EDispatcher;
-import com.crosschain.dispatch.transaction.duel.mode.PDispatcher;
+import com.crosschain.dispatch.transaction.dual.LockDispatcher;
+import com.crosschain.dispatch.transaction.dual.UnlockDispatcher;
+import com.crosschain.dispatch.transaction.dual.mode.EDispatcher;
+import com.crosschain.dispatch.transaction.dual.mode.PDispatcher;
 import com.crosschain.dispatch.transaction.single.SingleTransactionCrossChainDispatcher;
 import com.crosschain.group.GroupManager;
 import org.springframework.context.annotation.Bean;

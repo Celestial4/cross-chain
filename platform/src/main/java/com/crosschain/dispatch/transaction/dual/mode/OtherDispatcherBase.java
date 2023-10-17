@@ -1,4 +1,4 @@
-package com.crosschain.dispatch.transaction.duel.mode;
+package com.crosschain.dispatch.transaction.dual.mode;
 
 import com.crosschain.audit.entity.TransactionAudit;
 import com.crosschain.common.entity.CommonChainRequest;

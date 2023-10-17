@@ -1,4 +1,4 @@
-package com.crosschain.dispatch.transaction.duel;
+package com.crosschain.dispatch.transaction.dual;
 
 import com.crosschain.audit.entity.ExtensionInfo;
 import com.crosschain.audit.entity.HTLCMechanismInfo;
