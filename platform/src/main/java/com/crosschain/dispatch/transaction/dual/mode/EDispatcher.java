@@ -27,7 +27,7 @@ public class EDispatcher extends OtherDispatcherBase {
         Chain chain = null;
         ProcessAudit processAudit = new ProcessAudit();
         try {
-            groupManager.getChain(req.getChainName());
+            chain = groupManager.getChain(req.getChainName());
             ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "notory");
             processAudit.setProcess_log(processLog);
             processAudit.setProcess_result(result);
