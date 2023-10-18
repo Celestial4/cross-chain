@@ -68,9 +68,6 @@ public class TransactionAudit {
             timestamp = CrossChainUtils.extractInfo("time", transactionRes);
             action = CrossChainUtils.extractInfo("action", transactionRes);
             status = CrossChainUtils.extractInfo("status", transactionRes);
-            if (status.length() > 2) {
-                status = status.substring(0, 1);
-            }
 
         } catch (UniException e) {
             proof = "null";
@@ -120,6 +117,10 @@ public class TransactionAudit {
             String behavioralResults = status;
 
             payload.setAction(action);
+            //status因为是数字类型，通过正则表达式解析出来可能包含','，在这里做一下兼容性处理
+            if (status.contains(",")) {
+                status = status.substring(0, status.indexOf(',')).trim();
+            }
             payload.setStatus(Integer.parseInt(status));
             payload.setChannel_name(grp_name);
             payload.setGateway_ids(gateway_id);
