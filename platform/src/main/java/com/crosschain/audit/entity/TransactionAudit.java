@@ -68,6 +68,10 @@ public class TransactionAudit {
             timestamp = CrossChainUtils.extractInfo("time", transactionRes);
             action = CrossChainUtils.extractInfo("action", transactionRes);
             status = CrossChainUtils.extractInfo("status", transactionRes);
+            if (status.length() > 2) {
+                status = status.substring(0, 1);
+            }
+
         } catch (UniException e) {
             proof = "null";
             timestamp = "0";
