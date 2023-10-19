@@ -8,6 +8,7 @@ import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.entity.Group;
 import com.crosschain.exception.CrossChainException;
+import com.crosschain.exception.UniException;
 import com.crosschain.group.GroupManager;
 import com.crosschain.service.response.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,7 @@ public class BaseDispatcher implements Dispatcher {
         log.info("group:{},{},chain:{},{}", grp.getGroupName(), grp.getStatus(), chain.getChainName(), chain.getStatus());
     }
 
-    protected String extractInfo(String field, String source) throws Exception {
+    protected String extractInfo(String field, String source) throws UniException {
         return CrossChainUtils.extractInfo(field, source);
     }
 

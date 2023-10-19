@@ -21,4 +21,12 @@ public class ProcessLog {
         this.tx_hash = tx_hash;
         this.desc = desc;
     }
+
+    public ProcessLog(String chainName, String chainType, String tx_hash, String desc, String error) {
+        chain_name = chainName;
+        chain_type = chainType;
+        this.tx_hash = tx_hash;
+        this.desc = desc;
+        this.error = error;
+    }
 }

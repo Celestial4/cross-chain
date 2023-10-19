@@ -5,6 +5,7 @@ import com.crosschain.audit.entity.HTLCMechanismInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.common.AuditUtils;
+import com.crosschain.common.CrossChainUtils;
 import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.entity.Group;
@@ -86,7 +87,7 @@ public class UnlockDispatcher extends TransactionBase {
         }
         auditManager.addHTLCInfo(req_id, new HTLCMechanismInfo(lock_amount, lock_amount, lock_time));
 
-        boolean status = extractInfo("status", res).equals("1");
+        boolean status = CrossChainUtils.extractStatusField(res).equals("1");
         if (!status) {
             throw new CrossChainException(105, req.getChainName() + "资产解锁失败");
         }

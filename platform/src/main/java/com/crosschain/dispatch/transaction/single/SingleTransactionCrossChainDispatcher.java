@@ -2,6 +2,7 @@ package com.crosschain.dispatch.transaction.single;
 
 import com.crosschain.audit.entity.*;
 import com.crosschain.common.AuditUtils;
+import com.crosschain.common.CrossChainUtils;
 import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.entity.CommonChainResponse;
@@ -32,6 +33,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
 
     /**
      * 源链锁定资产
+     *
      * @param req
      * @param req_id
      * @return 锁定资产的结果
@@ -64,7 +66,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             auditManager.addHTLCInfo(req_id, new HTLCMechanismInfo(lock_amount, lock_amount, lock_time));
 
             //根据锁定函数返回的结果判断锁定是否成功
-            if (!extractInfo("status", res).equals("1")) {
+            if (!CrossChainUtils.extractStatusField(res).equals("1")) {
                 auditManager.addHTLCInfo(req_id, new HTLCMechanismInfo(lock_amount, lock_amount, "lock failed."));
                 throw new CrossChainException(104, String.format("源链资产锁定失败,请检查跨链参数或相应区块链，详情：%s", extractInfo("data", res)));
             }
@@ -85,7 +87,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
 
         //判断源链解锁是否成功，若失败，则抛异常，后续回滚
-        if (!extractInfo("status", res).equals("1")) {
+        if (!CrossChainUtils.extractStatusField(res).equals("1")) {
             throw new CrossChainException(105, String.format("源链资产解锁失败,详情：%s", extractInfo("data", res)));
         }
         return new CommonChainResponse(res);
@@ -100,7 +102,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
         ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(res);
         auditManager.addProcess(req_id, new ProcessAudit(res, processLog, extensionInfo));
         auditManager.getHTLCInfo(req_id).setHtlc_status("状态回滚，不解锁");
-        if (!extractInfo("status", res).equals("1")) {
+        if (!CrossChainUtils.extractStatusField(res).equals("1")) {
             throw new CrossChainException(106, String.format("源链资产回滚失败,详情：%s", extractInfo("data", res)));
         }
         return new CommonChainResponse(res);
@@ -153,7 +155,7 @@ public class SingleTransactionCrossChainDispatcher extends BaseDispatcher {
             response.setDesResult(desRes.getResult());
 
             //判断目标链执行是否成功，若失败，则回滚
-            if (extractInfo("status", desRes.getResult()).equals("1")) {
+            if (CrossChainUtils.extractStatusField(desRes.getResult()).equals("1")) {
                 //status==1 目标链合约执行结果表示成功，接下来执行unlock
 
                 //要去源链锁定合约执行的结果中提取addr字段

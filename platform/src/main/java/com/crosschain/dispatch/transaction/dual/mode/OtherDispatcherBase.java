@@ -4,6 +4,7 @@ import com.crosschain.audit.entity.TransactionAudit;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainRequest;
+import com.crosschain.exception.UniException;
 import com.crosschain.service.response.Response;
 import com.crosschain.service.response.entity.SelfServiceResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -47,8 +48,8 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
 
             finishCrosschain(result);
 
-        } catch (Exception e) {
-            log.error(e.getMessage());
+        } catch (UniException e) {
+            log.error(e.getErrorMsg());
             TransactionAudit.setErrorCallAuditInfo(transAuditInfo, req, groupManager.getGroup(req.getGroup()), auditManager);
             throw e;
         } finally {

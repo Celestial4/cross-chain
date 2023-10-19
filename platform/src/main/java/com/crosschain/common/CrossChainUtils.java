@@ -1,6 +1,7 @@
 package com.crosschain.common;
 
 import com.crosschain.exception.ResolveException;
+import com.crosschain.exception.UniException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.MessageDigest;
@@ -30,7 +31,7 @@ public class CrossChainUtils {
         return sb.toString();
     }
 
-    public static String extractInfo(String field, String source) throws Exception {
+    public static String extractInfo(String field, String source) throws UniException {
         Pattern p = Pattern.compile(String.format("(%s\"?:\\s*)(\"?)([\\w,.:;\\s!]+)\\2", field));
         Matcher m = p.matcher(source);
         if (m.find()) {
@@ -38,5 +39,25 @@ public class CrossChainUtils {
         } else {
             throw new ResolveException(field);
         }
+    }
+
+    /**
+     * status字段是数字类型的，用正则去匹配会把','匹配进去，这里做兼容性处理
+     *
+     * @param data
+     * @return status整数
+     */
+    public static String extractStatusField(String data) {
+        String ret = "";
+        try {
+            String status = CrossChainUtils.extractInfo("status", data).trim();
+            if (status.contains(",")) {
+                status = status.substring(0, status.indexOf(','));
+            }
+            ret = status;
+        } catch (Exception e) {
+            ret = "2";
+        }
+        return ret;
     }
 }

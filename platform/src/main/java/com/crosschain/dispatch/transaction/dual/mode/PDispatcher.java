@@ -4,6 +4,7 @@ import com.crosschain.audit.entity.DPKMechanismInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.common.AuditUtils;
+import com.crosschain.common.CrossChainUtils;
 import com.crosschain.common.SystemInfo;
 import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
@@ -32,7 +33,13 @@ public class PDispatcher extends OtherDispatcherBase {
     @Override
     protected void setProcessInfo(String req_id, String result, CommonChainRequest req) {
         Chain chain = null;
+        String errorInfo = "";
         try {
+            try {
+                errorInfo = extractInfo("data", result);
+            } catch (Exception e) {
+                //donothing
+            }
             chain = groupManager.getChain(req.getChainName());
             Map<Integer, String> dpkMap = new HashMap<>();
 
@@ -65,7 +72,7 @@ public class PDispatcher extends OtherDispatcherBase {
             }
         } catch (Exception e) {
             log.debug("获取DPKY过程信息异常：" + e.getMessage());
-            ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "");
+            ProcessLog processLog = AuditUtils.buildErrorProcessLog(chain, result, "", errorInfo);
             auditManager.addProcess(req_id, new ProcessAudit("dpky occurs exception", processLog));
         }
     }
@@ -106,8 +113,8 @@ public class PDispatcher extends OtherDispatcherBase {
     }
 
     @Override
-    protected void finishCrosschain(String result) throws Exception {
-        if (!extractInfo("status", result).equals("1")) {
+    protected void finishCrosschain(String result) throws UniException {
+        if (!CrossChainUtils.extractStatusField(result).equals("1")) {
             String errorInfo = extractInfo("data", result);
             throw new CrossChainException(800, "DPKY跨链失败：" + errorInfo);
         }

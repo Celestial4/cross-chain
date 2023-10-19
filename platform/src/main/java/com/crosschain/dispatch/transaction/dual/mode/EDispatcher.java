@@ -4,6 +4,7 @@ import com.crosschain.audit.entity.NotaryMechanismInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.common.AuditUtils;
+import com.crosschain.common.CrossChainUtils;
 import com.crosschain.common.SystemInfo;
 import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
@@ -26,7 +27,13 @@ public class EDispatcher extends OtherDispatcherBase {
     protected void setProcessInfo(String req_id, String result, CommonChainRequest req) {
         Chain chain = null;
         ProcessAudit processAudit = new ProcessAudit();
+        String errorInfo = "";
         try {
+            try {
+                errorInfo = extractInfo("data", result);
+            } catch (Exception e) {
+                //donothing
+            }
             chain = groupManager.getChain(req.getChainName());
             ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "notory");
             processAudit.setProcess_log(processLog);
@@ -36,7 +43,7 @@ public class EDispatcher extends OtherDispatcherBase {
         } catch (Exception e) {
             //do nothing
             log.debug("获取公证人处理过程异常：" + e.getMessage());
-            ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "notory occurs exception");
+            ProcessLog processLog = AuditUtils.buildErrorProcessLog(chain, result, "notory occurs exception", errorInfo);
             processAudit.setProcess_log(processLog);
         } finally {
             auditManager.addProcess(req_id, processAudit);
@@ -62,8 +69,8 @@ public class EDispatcher extends OtherDispatcherBase {
     }
 
     @Override
-    protected void finishCrosschain(String result) throws Exception {
-        if (!extractInfo("status", result).equals("1")) {
+    protected void finishCrosschain(String result) throws UniException {
+        if (!CrossChainUtils.extractStatusField(result).equals("1")) {
             String errorInfo = extractInfo("data", result);
             throw new CrossChainException(700, "公证人跨链失败：" + errorInfo);
         }
