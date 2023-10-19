@@ -1,5 +1,6 @@
 package com.crosschain.dispatch.transaction.dual.mode;
 
+import com.crosschain.audit.entity.ExtensionInfo;
 import com.crosschain.audit.entity.NotaryMechanismInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
@@ -40,6 +41,9 @@ public class EDispatcher extends OtherDispatcherBase {
             processAudit.setProcess_result(result);
             String na_time = extractInfo("na_time", result);
             processAudit.setProcess_time(na_time);
+            ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(result);
+            processAudit.setExtensionInfo(extensionInfo);
+
         } catch (Exception e) {
             //do nothing
             log.debug("获取公证人处理过程异常：" + e.getMessage());

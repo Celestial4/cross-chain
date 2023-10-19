@@ -1,6 +1,7 @@
 package com.crosschain.dispatch.transaction.dual.mode;
 
 import com.crosschain.audit.entity.DPKMechanismInfo;
+import com.crosschain.audit.entity.ExtensionInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.common.AuditUtils;
@@ -68,7 +69,8 @@ public class PDispatcher extends OtherDispatcherBase {
 
                 String signer = "signer" + (i + 1);
                 ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, signer);
-                auditManager.addProcess(req_id, new ProcessAudit(result, processLog));
+                ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(result);
+                auditManager.addProcess(req_id, new ProcessAudit(result, processLog, extensionInfo));
             }
         } catch (Exception e) {
             log.debug("获取DPKY过程信息异常：" + e.getMessage());
