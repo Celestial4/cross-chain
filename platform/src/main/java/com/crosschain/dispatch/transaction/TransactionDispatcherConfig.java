@@ -3,6 +3,7 @@ package com.crosschain.dispatch.transaction;
 import com.crosschain.audit.AuditManager;
 import com.crosschain.dispatch.transaction.dual.LockDispatcher;
 import com.crosschain.dispatch.transaction.dual.UnlockDispatcher;
+import com.crosschain.dispatch.transaction.dual.mode.DualDispatcher;
 import com.crosschain.dispatch.transaction.dual.mode.EDispatcher;
 import com.crosschain.dispatch.transaction.dual.mode.PDispatcher;
 import com.crosschain.dispatch.transaction.single.SingleTransactionCrossChainDispatcher;
@@ -44,6 +45,16 @@ public class TransactionDispatcherConfig {
         singleTransactionCrossChainDispatcher.setAuditManager(auditManager);
         singleTransactionCrossChainDispatcher.setCrossChainMechanism(1);
         return singleTransactionCrossChainDispatcher;
+    }
+
+    @Bean("htlc2")
+    public DualDispatcher dualDispatcher() {
+        //mode参数设置为Q表示双边哈希时间锁
+        DualDispatcher dualDispatcher = new DualDispatcher("Q");
+        dualDispatcher.setGroupManager(groupManager);
+        dualDispatcher.setAuditManager(auditManager);
+        dualDispatcher.setCrossChainMechanism(1);
+        return dualDispatcher;
     }
 
     @Bean("notary")
