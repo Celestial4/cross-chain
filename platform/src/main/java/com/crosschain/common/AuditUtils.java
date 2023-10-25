@@ -5,6 +5,7 @@ import com.crosschain.audit.entity.ExtensionInfo;
 import com.crosschain.audit.entity.ProcessAudit;
 import com.crosschain.audit.entity.ProcessLog;
 import com.crosschain.common.entity.Chain;
+import com.crosschain.exception.UniException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +26,14 @@ public class AuditUtils {
             tx_hash = m.group(3);
         } else {
             tx_hash = "";
+        }
+
+        if (!CrossChainUtils.extractStatusField(res).equals("1")) {
+            try {
+                return new ProcessLog(chainName, chainType, tx_hash, desc, CrossChainUtils.extractInfo("data", res));
+            } catch (UniException e) {
+                //do noting
+            }
         }
         return new ProcessLog(chainName, chainType, tx_hash, desc);
     }

@@ -15,6 +15,7 @@ import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,8 +72,13 @@ public class AuditManager {
         mechanism_info.add(h);
     }
 
-    public HTLCMechanismInfo getHTLCInfo(String id) {
-        return (HTLCMechanismInfo) auditionMap.get(id).getTransaction_result().getMechanism_info();
+    public List<HTLCMechanismInfo> getHTLCInfo(String id) {
+        List<Mechanism> list = auditionMap.get(id).getTransaction_result().getMechanism_info();
+        List<HTLCMechanismInfo> res = new LinkedList<>();
+        for (Mechanism mechanism : list) {
+            res.add((HTLCMechanismInfo) mechanism);
+        }
+        return res;
     }
 
     public void addNotaryInfo(String id, NotaryMechanismInfo n) {

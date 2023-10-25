@@ -31,7 +31,7 @@ public class EDispatcher extends OtherDispatcherBase {
         String errorInfo = "";
         try {
             try {
-                errorInfo = extractInfo("data", result);
+                errorInfo = CrossChainUtils.extractInfo("data", result);
             } catch (Exception e) {
                 //donothing
             }
@@ -39,7 +39,7 @@ public class EDispatcher extends OtherDispatcherBase {
             ProcessLog processLog = AuditUtils.buildProcessLog(chain, result, "notory");
             processAudit.setProcess_log(processLog);
             processAudit.setProcess_result(result);
-            String na_time = extractInfo("na_time", result);
+            String na_time = CrossChainUtils.extractInfo("na_time", result);
             processAudit.setProcess_time(na_time);
             ExtensionInfo extensionInfo = AuditUtils.buildExtensionInfo(result);
             processAudit.setExtensionInfo(extensionInfo);
@@ -60,8 +60,8 @@ public class EDispatcher extends OtherDispatcherBase {
         try {
             String ns_ip = SystemInfo.getGatewayAddr(SystemInfo.getSelfChainName());
             notaryMechanismInfo.setNs_ip(ns_ip);
-            String na_id = extractInfo("na_id", result);
-            String na_choice = extractInfo("na_choice", result);
+            String na_id = CrossChainUtils.extractInfo("na_id", result);
+            String na_choice = CrossChainUtils.extractInfo("na_choice", result);
             notaryMechanismInfo.setNa_choice(na_choice);
             notaryMechanismInfo.setNa_id(na_id);
         } catch (Exception e) {
@@ -75,7 +75,7 @@ public class EDispatcher extends OtherDispatcherBase {
     @Override
     protected void finishCrosschain(String result) throws UniException {
         if (!CrossChainUtils.extractStatusField(result).equals("1")) {
-            String errorInfo = extractInfo("data", result);
+            String errorInfo = CrossChainUtils.extractInfo("data", result);
             throw new CrossChainException(700, "公证人跨链失败：" + errorInfo);
         }
     }

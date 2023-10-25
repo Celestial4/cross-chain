@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SelfDispatcherConfig {
 
-    @Bean
+    @Bean("self")
     public SelfDispatcher selfDispatcher() {
         return new SelfDispatcher();
     }

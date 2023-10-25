@@ -1,6 +1,7 @@
 package com.crosschain.dispatch.transaction.dual.mode;
 
 import com.crosschain.audit.entity.TransactionAudit;
+import com.crosschain.common.CrossChainUtils;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.dispatch.BaseDispatcher;
 import com.crosschain.dispatch.CrossChainRequest;
@@ -44,13 +45,13 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
             //实际执行
             result = sendTransaction(srcChainRequest);
 
-            TransactionAudit.construct(transAuditInfo, groupManager.getGroup(req.getGroup()), auditManager, req, result);
+            CrossChainUtils.constructAuditInfo(transAuditInfo, groupManager, auditManager, req, result);
 
             finishCrosschain(result);
 
         } catch (UniException e) {
             log.error(e.getErrorMsg());
-            TransactionAudit.setErrorCallAuditInfo(transAuditInfo, req, groupManager.getGroup(req.getGroup()), auditManager);
+            CrossChainUtils.constructErrorAuditInfo(transAuditInfo, req, groupManager, auditManager);
             throw e;
         } finally {
             //设置过程信息

@@ -37,7 +37,7 @@ public class PDispatcher extends OtherDispatcherBase {
         String errorInfo = "";
         try {
             try {
-                errorInfo = extractInfo("data", result);
+                errorInfo = CrossChainUtils.extractInfo("data", result);
             } catch (Exception e) {
                 //donothing
             }
@@ -117,7 +117,7 @@ public class PDispatcher extends OtherDispatcherBase {
     @Override
     protected void finishCrosschain(String result) throws UniException {
         if (!CrossChainUtils.extractStatusField(result).equals("1")) {
-            String errorInfo = extractInfo("data", result);
+            String errorInfo = CrossChainUtils.extractInfo("data", result);
             throw new CrossChainException(800, "DPKY跨链失败：" + errorInfo);
         }
     }

@@ -2,13 +2,11 @@ package com.crosschain.dispatch;
 
 import com.crosschain.audit.AuditManager;
 import com.crosschain.common.CrossChainClient;
-import com.crosschain.common.CrossChainUtils;
 import com.crosschain.common.SystemInfo;
 import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
 import com.crosschain.common.entity.Group;
 import com.crosschain.exception.CrossChainException;
-import com.crosschain.exception.UniException;
 import com.crosschain.group.GroupManager;
 import com.crosschain.service.response.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-public class BaseDispatcher implements Dispatcher {
+public abstract class BaseDispatcher implements Dispatcher {
 
     protected Integer CrossChainMechanism;
 
@@ -52,10 +50,6 @@ public class BaseDispatcher implements Dispatcher {
         }
 
         log.info("group:{},{},chain:{},{}", grp.getGroupName(), grp.getStatus(), chain.getChainName(), chain.getStatus());
-    }
-
-    protected String extractInfo(String field, String source) throws UniException {
-        return CrossChainUtils.extractInfo(field, source);
     }
 
     @Override
@@ -95,12 +89,12 @@ public class BaseDispatcher implements Dispatcher {
             String socAddress = SystemInfo.getServiceAddr(req.getChainName());
 
             String[] socketInfo = socAddress.split(":");
-            log.info("[-----call info-----]\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
+            log.info("\n[-----call info-----]\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
             byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n"), req.getRequestId()});
 
             String res = new String(data, StandardCharsets.UTF_8);
-            log.info("received from blockchain:{},{}", req.getChainName(), res);
+            log.info("\n[received from blockchain]:{}\n{}", req.getChainName(), res);
 
             return res;
         } catch (Exception e) {

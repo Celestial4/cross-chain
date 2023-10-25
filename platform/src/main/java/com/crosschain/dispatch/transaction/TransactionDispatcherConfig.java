@@ -3,10 +3,10 @@ package com.crosschain.dispatch.transaction;
 import com.crosschain.audit.AuditManager;
 import com.crosschain.dispatch.transaction.dual.LockDispatcher;
 import com.crosschain.dispatch.transaction.dual.UnlockDispatcher;
-import com.crosschain.dispatch.transaction.dual.mode.DualDispatcher;
 import com.crosschain.dispatch.transaction.dual.mode.EDispatcher;
 import com.crosschain.dispatch.transaction.dual.mode.PDispatcher;
-import com.crosschain.dispatch.transaction.single.SingleTransactionCrossChainDispatcher;
+import com.crosschain.dispatch.transaction.single.DualTransactionDispatcher;
+import com.crosschain.dispatch.transaction.single.SingleTransactionDispatcher;
 import com.crosschain.group.GroupManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,22 +39,21 @@ public class TransactionDispatcherConfig {
     }
 
     @Bean("htlc")
-    public SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher() {
-        SingleTransactionCrossChainDispatcher singleTransactionCrossChainDispatcher = new SingleTransactionCrossChainDispatcher();
-        singleTransactionCrossChainDispatcher.setGroupManager(groupManager);
-        singleTransactionCrossChainDispatcher.setAuditManager(auditManager);
-        singleTransactionCrossChainDispatcher.setCrossChainMechanism(1);
-        return singleTransactionCrossChainDispatcher;
+    public SingleTransactionDispatcher singleTransactionCrossChainDispatcher() {
+        SingleTransactionDispatcher singleTransactionDispatcher = new SingleTransactionDispatcher();
+        singleTransactionDispatcher.setGroupManager(groupManager);
+        singleTransactionDispatcher.setAuditManager(auditManager);
+        singleTransactionDispatcher.setCrossChainMechanism(1);
+        return singleTransactionDispatcher;
     }
 
     @Bean("htlc2")
-    public DualDispatcher dualDispatcher() {
-        //mode参数设置为Q表示双边哈希时间锁
-        DualDispatcher dualDispatcher = new DualDispatcher("Q");
-        dualDispatcher.setGroupManager(groupManager);
-        dualDispatcher.setAuditManager(auditManager);
-        dualDispatcher.setCrossChainMechanism(1);
-        return dualDispatcher;
+    public DualTransactionDispatcher dualDispatcher() {
+        DualTransactionDispatcher dualTransactionDispatcher = new DualTransactionDispatcher();
+        dualTransactionDispatcher.setGroupManager(groupManager);
+        dualTransactionDispatcher.setAuditManager(auditManager);
+        dualTransactionDispatcher.setCrossChainMechanism(1);
+        return dualTransactionDispatcher;
     }
 
     @Bean("notary")
