@@ -17,7 +17,7 @@ public class BasicCrossChainDispatcherConfig {
     @Resource
     private AuditManager auditManager;
 
-    @Bean
+    @Bean("default")
     public InfoSharingDispatcher defaultDispatcher(){
         InfoSharingDispatcher dispatcher = new DefaultInfoSharingDispatcher();
         dispatcher.setGroupManager(groupManager);
