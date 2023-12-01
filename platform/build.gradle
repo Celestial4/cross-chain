@@ -67,6 +67,7 @@ jar{
 
         copy {
             from file('script/')
+            exclude 'copy-jar.sh'
             into 'dist'
         }
     }
