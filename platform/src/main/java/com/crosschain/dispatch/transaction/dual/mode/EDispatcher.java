@@ -46,7 +46,7 @@ public class EDispatcher extends OtherDispatcherBase {
 
         } catch (Exception e) {
             //do nothing
-            log.debug("获取公证人处理过程异常：" + e.getMessage());
+            log.debug("获取公证人处理过程信息异常：" + e.getMessage());
             ProcessLog processLog = AuditUtils.buildErrorProcessLog(chain, result, "notory occurs exception", errorInfo);
             processAudit.setProcess_log(processLog);
         } finally {

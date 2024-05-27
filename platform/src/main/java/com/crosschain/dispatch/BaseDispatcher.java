@@ -12,8 +12,7 @@ import com.crosschain.service.response.Response;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 public abstract class BaseDispatcher implements Dispatcher {
@@ -91,7 +90,14 @@ public abstract class BaseDispatcher implements Dispatcher {
             String[] socketInfo = socAddress.split(":");
             log.info("\n[-----call info-----]\n[chain]:{}\n[contract]:{}\n[function]:{}\n[args]:{}\n[connection]:{}", req.getChainName(), req.getContract(), req.getFunction(), req.getArgs(), socketInfo);
 
-            byte[] data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n"), req.getRequestId()});
+            byte[] data = null;
+            String reqContract = req.getContract();
+            //兼容
+            if ("CrossChain".equals(reqContract) || "AssetTransfer".equals(reqContract)) {
+                data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n"), req.getRequestId()});
+            } else {
+                data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n")});
+            }
 
             String res = new String(data, StandardCharsets.UTF_8);
             log.info("\n[received from blockchain]:{}\n{}", req.getChainName(), res);

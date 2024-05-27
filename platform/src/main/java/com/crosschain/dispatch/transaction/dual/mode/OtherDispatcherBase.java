@@ -50,7 +50,7 @@ public abstract class OtherDispatcherBase extends BaseDispatcher {
             finishCrosschain(result);
 
         } catch (UniException e) {
-            log.error(e.getErrorMsg());
+            log.warn(e.getErrorMsg());
             CrossChainUtils.constructErrorAuditInfo(transAuditInfo, req, groupManager, auditManager);
             throw e;
         } finally {

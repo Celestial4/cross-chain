@@ -10,7 +10,7 @@ function input_chain_name() {
   while true; do
     read -p "请输入要添加的区块链网关名：-> " chain_name
 
-    if [[ "$(grep "$chain_name" conf/config.properties)" ]]; then
+    if [[ "$(grep "$chain_name=" conf/config.properties)" ]]; then
       print_error "已添加$chain_name网关信息，请勿重复添加！"
     else
       return
