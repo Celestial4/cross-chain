@@ -16,6 +16,7 @@ public class CommonRule extends Thread{
     static ServerSocket server = null;
     static Method callbackfun;
     private static final Logger logger = LoggerFactory.getLogger(CommonRule.class);
+    static int nId=1;
 
     public static boolean init(int _port, Method call) {
         port = _port;
@@ -61,6 +62,18 @@ public class CommonRule extends Thread{
             System.arraycopy(receive, 0, data, 0, len);
             String msg = new String(data);
             logger.info(Fabrics.logPlacehdr(),"stub has received cross-chain request: ["+msg+"]");
+
+            //////////////////////////////////////////////////////
+            String strid = "" + nId++;
+            String tp = "";
+            int nindexc = msg.indexOf("[Encrypt]");
+            if (nindexc > 0) {
+                String xxdata = msg.substring(nindexc + 9);
+                tp = msg.substring(0, nindexc);
+                msg = MmServer.decrypt(xxdata, tp, strid);
+            }
+            //////////////////////////////////////////////////////
+
             String sret = null;
             try {
                 sret = (String) callbackfun.invoke(null,msg);
@@ -70,8 +83,17 @@ public class CommonRule extends Thread{
                 String sxxx=ex.getMessage();
             }
             if (sret == null) {
-                sret = "error";
+                sret = "received message from fabric: error";
             }
+
+            /////////////////////////////////////////////////////
+            if (!tp.equals("")) {
+                sret = MmServer.crypt(sret, tp, strid);
+                if (sret.indexOf("error") < 0) {
+                    sret = tp + "[Encrypt]" + data;
+                }
+            }
+            ///////////////////////////////////////////////////
 
             OutputStream outputStream = s.getOutputStream();
             outputStream.write(sret.getBytes(StandardCharsets.UTF_8));

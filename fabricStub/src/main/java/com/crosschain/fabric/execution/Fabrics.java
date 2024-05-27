@@ -8,7 +8,6 @@ import org.hyperledger.fabric.client.identity.*;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
