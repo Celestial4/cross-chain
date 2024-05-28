@@ -94,9 +94,9 @@ public abstract class BaseDispatcher implements Dispatcher {
             String reqContract = req.getContract();
             //兼容
             if ("CrossChain".equals(reqContract) || "AssetTransfer".equals(reqContract)) {
-                data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n"), req.getRequestId()});
+                data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n"), req.getRequestId()}, req.getRequestId());
             } else {
-                data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n")});
+                data = CrossChainClient.innerCall(socketInfo, new String[]{req.getContract(), req.getFunction(), req.getArgs().replaceAll(",", "\r\n")}, req.getRequestId());
             }
 
             String res = new String(data, StandardCharsets.UTF_8);

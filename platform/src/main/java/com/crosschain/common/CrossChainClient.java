@@ -9,12 +9,11 @@ import java.nio.charset.StandardCharsets;
 
 public class CrossChainClient {
 
-    static int nId = 1;
-
-    public static byte[] innerCall(String[] socketInfo, String[] req) throws Exception {
+    public static byte[] innerCall(String[] socketInfo, String[] req, String req_id) throws Exception {
         Socket socket = new Socket(socketInfo[0], Integer.parseInt(socketInfo[1]));
 
         String tp = MmServer.EncryptionType;
+
         //发送跨链请求
         OutputStream os = socket.getOutputStream();
         StringBuilder result = new StringBuilder();
@@ -25,8 +24,7 @@ public class CrossChainClient {
         String sret = result.toString();
         /////////////////////////////////////////////////////
         if (!"".equals(tp)) {
-            String strid = "" + nId++;
-            sret = MmServer.crypt(sret, tp, strid);
+            sret = MmServer.crypt(sret, tp, req_id);
             if (sret.indexOf("error") < 0) {
                 sret = tp + "[Encrypt]" + sret;
             }
@@ -49,7 +47,7 @@ public class CrossChainClient {
         if (nindexc > 0) {
             String xxdata = msg.substring(nindexc + 9);
             tp = msg.substring(0, nindexc);
-            msg = MmServer.decrypt(xxdata, tp, "" + (nId-1));
+            msg = MmServer.decrypt(xxdata, tp, req_id);
         }
         //////////////////////////////////////////////////////
         return msg.getBytes(StandardCharsets.UTF_8);
