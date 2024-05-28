@@ -1,6 +1,5 @@
 package com.crosschain.dispatch;
 
-import com.crosschain.audit.AuditManager;
 import com.crosschain.common.CrossChainClient;
 import com.crosschain.common.SystemInfo;
 import com.crosschain.common.entity.Chain;
@@ -20,8 +19,6 @@ public abstract class BaseDispatcher implements Dispatcher {
 
     protected Integer CrossChainMechanism;
 
-    protected AuditManager auditManager;
-
     protected GroupManager groupManager;
 
     public void setGroupManager(GroupManager groupManager) {
@@ -30,10 +27,6 @@ public abstract class BaseDispatcher implements Dispatcher {
 
     public void setCrossChainMechanism(Integer crossChainMechanism) {
         CrossChainMechanism = crossChainMechanism;
-    }
-
-    public void setAuditManager(AuditManager auditManager) {
-        this.auditManager = auditManager;
     }
 
     protected void checkAvailable0(Group grp, CommonChainRequest reqInfo) throws Exception {
@@ -73,7 +66,6 @@ public abstract class BaseDispatcher implements Dispatcher {
 
     @Override
     public void completeTask(String id) {
-        auditManager.completeRequest(id);
     }
 
     /**

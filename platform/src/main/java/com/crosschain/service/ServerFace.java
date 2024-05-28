@@ -1,10 +1,9 @@
 package com.crosschain.service;
 
 import com.alibaba.fastjson2.JSON;
-import com.crosschain.audit.AuditManager;
+import com.crosschain.common.SystemInfo;
 import com.crosschain.common.entity.Chain;
 import com.crosschain.common.entity.CommonChainRequest;
-import com.crosschain.common.SystemInfo;
 import com.crosschain.common.entity.Group;
 import com.crosschain.dispatch.CrossChainRequest;
 import com.crosschain.dispatch.Dispatcher;
@@ -14,10 +13,9 @@ import com.crosschain.filter.RequestFilter;
 import com.crosschain.group.GroupManager;
 import com.crosschain.service.request.CrossChainVo;
 import com.crosschain.service.request.SelfVo;
-import com.crosschain.service.response.entity.ErrorServiceResponse;
 import com.crosschain.service.response.Response;
 import com.crosschain.service.response.UniResponse;
-import com.crosschain.statistics.STATCSManager;
+import com.crosschain.service.response.entity.ErrorServiceResponse;
 import com.crosschain.thread.Task;
 import com.crosschain.thread.ThreadManager;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +34,6 @@ public class ServerFace {
 
     @Resource
     private GroupManager groupManager;
-
-    @Resource
-    private AuditManager auditManager;
 
     @Resource
     private RequestFilter filter;
@@ -71,11 +66,8 @@ public class ServerFace {
             //检查跨链群组合法性以及相应的源、目标链的合法性
             dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
 
-            //设置请求id，追踪每一次的跨链请求相关信息（数据上报的信息）
-            auditManager.joinRequest(crossChainVo);
-
             //添加异步任务，具体跨链请求在这个任务里面去执行
-            pool.addTask(new Task(dispatcher, req, auditManager));
+            pool.addTask(new Task(dispatcher, req));
 
             //
             response = new UniResponse(200, "success", "跨链请求已提交");
@@ -125,7 +117,7 @@ public class ServerFace {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
             dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
-            pool.addTask(new Task(dispatcher, req, auditManager));
+            pool.addTask(new Task(dispatcher, req));
             response = new UniResponse(200, "success", "跨链请求已提交");
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -151,7 +143,7 @@ public class ServerFace {
             filter.doFilter(crossChainVo);
             dispatcher = dispatcherManager.getDispatcher(crossChainVo.getMode());
             dispatcher.checkAvailable(groupManager.getGroup(req.getGroup()), Arrays.asList(src, des));
-            pool.addTask(new Task(dispatcher, req, auditManager));
+            pool.addTask(new Task(dispatcher, req));
             response = new UniResponse(200, "success", "跨链请求已提交");
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -218,20 +210,6 @@ public class ServerFace {
             return new ErrorServiceResponse(e).get();
         }
         return new UniResponse(200, "success", "操作成功").get();
-    }
-
-    @PostMapping("/cpu")
-    @ResponseBody
-    public String getCpuInfo() {
-        String cpuInfo = STATCSManager.getCpuInfo();
-        return new UniResponse(200, "success", cpuInfo).get();
-    }
-
-    @PostMapping("/mem")
-    @ResponseBody
-    public String getMemInfo() {
-        String memoryInfo = STATCSManager.getMemoryInfo();
-        return new UniResponse(200, "success", memoryInfo).get();
     }
 
     @PostMapping("list_allgroups")
