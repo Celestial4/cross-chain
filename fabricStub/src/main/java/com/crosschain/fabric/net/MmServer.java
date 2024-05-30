@@ -19,9 +19,9 @@ import java.util.Properties;
 public class MmServer {
 
     private static final Logger logger = LoggerFactory.getLogger(MmServer.class);
-    public static String EncryptionType="";
+    public static String EncryptionType = "";
 
-    static String mmserver="";
+    static String mmserver = "";
 
     static String sm2_c = "/relay/cryptsm2";
     static String sm2_d = "/relay/decryptsm2";
@@ -34,7 +34,7 @@ public class MmServer {
 
     private static final Properties pros = new Properties();
 
-    public void init(){
+    public void init() {
         try {
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             pros.load(resolver.getResource("file:conf/fabric.config").getInputStream());
@@ -48,8 +48,8 @@ public class MmServer {
         }
     }
 
-    public static void mmInit(String s){
-        mmserver=s;
+    public static void mmInit(String s) {
+        mmserver = s;
     }
 
     //解密
@@ -74,7 +74,9 @@ public class MmServer {
                 return "error: There is no such encryption method";
         }
         postdata = "{\"ciphertext\": \"" + data + "\",\"request_id\": \"" + rid + "\"}";
+        logger.info(String.format("fabric service sending decryption request: url:[%s], data: [%s]", url, postdata));
         String json = sendPost(url, postdata);
+        logger.info(String.format("fabric service received plaintext: [%s]", json));
         boolean stf = false;
         try {
             JSONObject jsonObject = JSON.parseObject(json);
@@ -112,7 +114,9 @@ public class MmServer {
         }
         String hex = encodeHexString(data);
         postdata = "{\"plaintext\": \"" + hex + "\",\"request_id\": \"" + rid + "\"}";
+        logger.info(String.format("fabric service sending encryption request: url:[%s], data: [%s]", url, postdata));
         String json = sendPost(url, postdata);
+        logger.info(String.format("fabric service received ciphertext: [%s]", json));
 
         boolean stf = false;
         try {
@@ -128,7 +132,7 @@ public class MmServer {
     }
 
     static String encodeHexString(String str) {
-        byte[] byteArray=str.getBytes();
+        byte[] byteArray = str.getBytes();
         StringBuilder hexString = new StringBuilder();
         for (byte b : byteArray) {
             String hex = Integer.toHexString(0xff & b);
@@ -150,7 +154,7 @@ public class MmServer {
             int j = Integer.parseInt(hexString.substring(index, index + 2), 16);
             byteArray[i] = (byte) j;
         }
-        String str=new String(byteArray);
+        String str = new String(byteArray);
         return str;
     }
 

@@ -16,7 +16,6 @@ public class CommonRule extends Thread{
     static ServerSocket server = null;
     static Method callbackfun;
     private static final Logger logger = LoggerFactory.getLogger(CommonRule.class);
-    static int nId=1;
 
     public static boolean init(int _port, Method call) {
         port = _port;
@@ -64,7 +63,7 @@ public class CommonRule extends Thread{
             logger.info(Fabrics.logPlacehdr(),"stub has received cross-chain request: ["+msg+"]");
 
             //////////////////////////////////////////////////////
-            String strid = "" + nId++;
+            String strid = "0";
             String tp = "";
             int nindexc = msg.indexOf("[Encrypt]");
             if (nindexc > 0) {
@@ -90,14 +89,14 @@ public class CommonRule extends Thread{
             if (!tp.equals("")) {
                 sret = MmServer.crypt(sret, tp, strid);
                 if (sret.indexOf("error") < 0) {
-                    sret = tp + "[Encrypt]" + data;
+                    sret = tp + "[Encrypt]" + sret;
                 }
             }
             ///////////////////////////////////////////////////
 
             OutputStream outputStream = s.getOutputStream();
             outputStream.write(sret.getBytes(StandardCharsets.UTF_8));
-            logger.info(Fabrics.logPlacehdr(),"sending back result...");
+            logger.info(Fabrics.logPlacehdr(),String.format("sending back result: [%s]", sret));
             inputStream.close();
             outputStream.close();
 

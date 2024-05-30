@@ -71,7 +71,9 @@ public class MmServer {
                 return "error: There is no such encryption method";
         }
         postdata = "{\"ciphertext\": \"" + data + "\",\"request_id\": \"" + rid + "\"}";
+        logger.info(String.format("gateway sending decryption request: url:[%s], data: [%s]", url, postdata));
         String json = sendPost(url, postdata);
+        logger.info(String.format("gateway received plaintext: [%s]", json));
         boolean stf = false;
         try {
             JSONObject jsonObject = JSON.parseObject(json);
@@ -109,7 +111,9 @@ public class MmServer {
         }
         String hex = encodeHexString(data);
         postdata = "{\"plaintext\": \"" + hex + "\",\"request_id\": \"" + rid + "\"}";
+        logger.info(String.format("gateway sending encryption request: url:[%s], data: [%s]", url, postdata));
         String json = sendPost(url, postdata);
+        logger.info(String.format("gateway received ciphertext: [%s]", json));
 
         boolean stf = false;
         try {
